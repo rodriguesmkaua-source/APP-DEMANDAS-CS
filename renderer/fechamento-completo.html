@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Fechamento Completo KnowU CS</title>
+  <link rel="stylesheet" href="fechamento.css">
+  <style>
+    body {
+      background: #22252f;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 14px 20px 40px; gap: 24px; min-height: 100vh;
+    }
+    .ctrl {
+      width: 1672px; background: #2e3140; border-radius: 7px;
+      border: 1px solid rgba(255,255,255,.07); padding: 9px 16px;
+      display: flex; align-items: center; gap: 8px;
+      position: sticky; top: 14px; z-index: 10;
+    }
+    .ctrl-lbl { flex: 1; font-size: 13px; font-weight: 700; color: rgba(255,255,255,.75) }
+    .cbtn {
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      padding: 6px 16px; border-radius: 6px; border: none; cursor: pointer;
+      transition: opacity .12s;
+    }
+    .cbtn:hover { opacity: .82 }
+    .c-pdf { background: #6b7280; color: white }
+    .c-cls { background: rgba(255,255,255,.1); color: rgba(255,255,255,.6) }
+    .cbtn:disabled { opacity: .5; cursor: not-allowed }
+
+    /* ── Capa 1672×941 — a arte já vem nesse tamanho nativo (mesma
+       proporção/escala dos slides de operadora), sem precisar de zoom. ── */
+    .cover {
+      width: 1672px; height: 941px; position: relative; overflow: hidden;
+      border-radius: 6px; background: #F1EEEB;
+      box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.1);
+    }
+    .cover-bg { width: 1672px; height: 941px; display: block }
+    .cover-title {
+      position: absolute; left: 99px; top: 258px;
+      font-weight: 800; line-height: 1.16; letter-spacing: -1.5px;
+    }
+    .cover-title .l1 { font-size: 104px; color: var(--navy) }
+    .cover-title .l2 { font-size: 104px }
+    .cover-title .l2 .navy   { color: var(--navy) }
+    .cover-title .l2 .orange { color: var(--orange) }
+    .cover-date {
+      position: absolute; left: 99px; top: 552px;
+      font-size: 27px; font-weight: 800; color: var(--navy); letter-spacing: -.3px;
+    }
+
+    .status { color: rgba(255,255,255,.55); font-size: 13px; margin-top: -8px }
+
+    @media print {
+      body { background: white; padding: 0; gap: 0 }
+      .ctrl, .status { display: none }
+      .cover, .slide { border-radius: 0; box-shadow: none; page-break-after: always }
+      .cover:last-child, .slide:last-child { page-break-after: auto }
+    }
+  </style>
+</head>
+<body>
+
+<div class="ctrl">
+  <span class="ctrl-lbl" id="ctrl-lbl">Fechamento Completo</span>
+  <button class="cbtn c-pdf" id="btn-pdf" onclick="exportPDF()" disabled>⏳ Gerando…</button>
+  <button class="cbtn c-cls" onclick="window.close()">✕ Fechar</button>
+</div>
+<div class="status" id="status"></div>
+
+<div id="pages"></div>
+
+<script src="fechamento-shared.js"></script>
+<script>
+const MOCK = {
+  mes: 'Junho', ano: 2026,
+  operadoras: [
+    { op: 'UNIMED SA', opDisplay: 'SA', mes: 'Junho', ano: 2026, total: 25,
+      tipos: [{ tipo: 'Agendamento EQ', count: 9 }, { tipo: 'Reenvio de assinatura médica', count: 8 }] },
+    { op: 'CÍRCULO SAÚDE', opDisplay: 'Círculo Saúde', mes: 'Junho', ano: 2026, total: 0, tipos: [] },
+  ],
+}
+
+function coverMarkup(mes, ano) {
+  return `
+    <img class="cover-bg" id="cover-bg-img" alt="">
+    <div class="cover-title">
+      <div class="l1">Fechamento</div>
+      <div class="l2"><span class="navy">Consolidado</span> <span class="orange">${mes}</span></div>
+    </div>
+    <div class="cover-date">${mes} de ${ano}</div>`
+}
+
+async function buildCover(mes, ano) {
+  const cover = document.createElement('div')
+  cover.className = 'cover'
+  cover.innerHTML = coverMarkup(mes, ano)
+  document.getElementById('pages').appendChild(cover)
+
+  let bgUrl = null
+  if (window.csApp && window.csApp.getCoverImage) {
+    try { bgUrl = await window.csApp.getCoverImage() } catch {}
+  }
+  const img = cover.querySelector('#cover-bg-img')
+  if (bgUrl) img.src = bgUrl
+  else img.remove() // sem a arte-base, mantém só o fundo sólido — nunca quebra o layout
+}
+
+async function buildOperatorPage(opData, index, total) {
+  const slide = document.createElement('div')
+  slide.className = 'slide'
+  document.getElementById('pages').appendChild(slide)
+  setStatus(`Gerando ${index + 1}/${total} — ${opData.opDisplay || opData.op}…`)
+  try {
+    slide.innerHTML = operatorSlideMarkup()
+    await renderOperatorSlide(slide, opData)
+  } catch (e) {
+    // Uma operadora com erro não derruba as demais — mostra um slide de aviso no lugar.
+    slide.innerHTML = `
+      <div class="hd"><div class="hd-title">Fechamento ${opData.opDisplay || opData.op || ''}</div></div>
+      <div class="card" style="align-items:center;justify-content:center;text-align:center">
+        <div>
+          <div style="font-size:40px;margin-bottom:12px">⚠️</div>
+          <div style="font-size:19px;font-weight:700;color:#B7B2A8">Erro ao gerar este fechamento</div>
+        </div>
+      </div>`
+    console.error('Falha ao gerar fechamento de', opData.op, e)
+  }
+}
+
+function setStatus(txt) {
+  const el = document.getElementById('status')
+  if (el) el.textContent = txt
+}
+
+async function render(data) {
+  document.getElementById('ctrl-lbl').textContent = `Fechamento Completo — ${data.mes} ${data.ano}`
+  document.title = `Fechamento Completo ${data.mes} ${data.ano}`
+
+  await buildCover(data.mes, data.ano)
+
+  const ops = data.operadoras || []
+  for (let i = 0; i < ops.length; i++) {
+    await buildOperatorPage(ops[i], i, ops.length)
+  }
+  setStatus(`✅ ${ops.length} operadora${ops.length !== 1 ? 's' : ''} + capa — pronto para exportar.`)
+  const btn = document.getElementById('btn-pdf')
+  btn.disabled = false
+  btn.textContent = '🖨️ Exportar PDF'
+}
+
+async function exportPDF() {
+  if (!window.csApp) { alert('Disponível apenas dentro do app.'); return }
+  const btn = document.getElementById('btn-pdf')
+  btn.disabled = true
+  btn.textContent = '⏳ Gerando PDF…'
+  try {
+    const result = await window.csApp.printFechamentoCompletoPDF()
+    if (result && result.error) alert('Erro ao exportar PDF: ' + result.error)
+  } finally {
+    btn.disabled = false
+    btn.textContent = '🖨️ Exportar PDF'
+  }
+}
+
+async function init() {
+  let data = MOCK
+  if (window.csApp) {
+    const real = await window.csApp.getFechamentoCompletoData()
+    if (real) data = real
+  }
+  await render(data)
+  window.__fechamentoCompletoReady = true
+  document.dispatchEvent(new Event('fechamento-completo-ready'))
+}
+
+init()
+</script>
+</body>
+</html>

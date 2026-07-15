@@ -1,0 +1,43 @@
+{
+  "name": "demandas-cs",
+  "version": "1.0.0",
+  "description": "KnowU CS - Log de Demandas",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.2",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0",
+    "tailwindcss": "^4.3.2"
+  },
+  "build": {
+    "appId": "br.com.knowu.demandas-cs",
+    "productName": "Demandas CS",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "excel.js",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  }
+}

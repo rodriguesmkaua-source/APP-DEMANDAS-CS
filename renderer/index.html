@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demandas CS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f0f11;--surface:#1a1a1f;--surface2:#222228;
+    --border:#2e2e38;--border2:#3a3a48;
+    --text:#e8e8f0;--muted:#7a7a92;
+    --accent:#7c6af7;--accent-dim:#7c6af722;
+    --green:#3dd68c;--green-dim:#3dd68c18;
+    --yellow:#f5c542;--yellow-dim:#f5c54218;
+    --red:#f56565;--red-dim:#f5656518;
+    --orange:#f59e42;--orange-dim:#f59e4218;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  .app{display:grid;grid-template-columns:320px 1fr;min-height:100vh}
+  .app.dash-mode{grid-template-columns:1fr}
+
+  .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:24px 20px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;height:100vh;overflow-y:auto}
+  .logo{display:flex;align-items:center;gap:10px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+  .logo-icon{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
+  .logo-text{font-size:14px;font-weight:600;letter-spacing:-.3px}
+  .logo-sub{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace}
+  label{display:block;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+  input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;outline:none;transition:border-color .15s}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--surface)}
+  input::placeholder,textarea::placeholder{color:var(--muted)}
+  textarea{resize:none;height:62px;line-height:1.5}
+  select option{background:#1a1a1f}
+  .field{display:flex;flex-direction:column}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btn-add{background:var(--accent);border:none;border-radius:9px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:11px;cursor:pointer;width:100%;transition:opacity .15s,transform .1s}
+  .btn-add:hover{opacity:.88}
+  .btn-add:active{transform:scale(.98)}
+  .export-row{display:flex;gap:6px;align-items:stretch}
+  .btn-export{background:none;border:1px solid var(--border2);border-radius:9px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;padding:9px;cursor:pointer;flex:1;transition:color .15s,border-color .15s}
+  .btn-export:hover{color:var(--text);border-color:var(--border2)}
+  .btn-export-cfg{background:none;border:1px solid var(--border2);border-radius:9px;color:var(--muted);font-size:14px;padding:0 10px;cursor:pointer;transition:color .15s,border-color .15s;white-space:nowrap;display:flex;align-items:center}
+  .btn-export-cfg:hover{color:var(--accent);border-color:var(--accent)}
+  .export-folder-hint{font-size:9px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;opacity:.7}
+  .btn-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .btn-bk{background:none;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;padding:7px 4px;cursor:pointer;transition:color .15s,border-color .15s;text-align:center}
+  .btn-bk:hover{color:var(--text);border-color:var(--border2)}
+  .hint{font-size:10px;color:var(--muted);text-align:center}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+  .stat{background:var(--surface);padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+  .stat-n{font-size:20px;font-weight:600;font-family:'DM Mono',monospace}
+  .stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .n-all{color:var(--text)}.n-ab{color:var(--red)}.n-and{color:var(--yellow)}.n-res{color:var(--green)}
+
+  .main{display:flex;flex-direction:column}
+  .toolbar{padding:12px 20px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:10}
+  .toolbar-top{display:flex;align-items:center;gap:10px}
+  .toolbar-title{font-size:13px;font-weight:600;flex:1}
+  .search-wrap{position:relative;flex:1}
+  .search-wrap input{padding-left:30px;font-size:12px}
+  .search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+  .filters{display:flex;gap:6px;flex-wrap:wrap}
+  .filter-btn{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+  .filter-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+  .filter-btn:hover:not(.active){border-color:var(--border2);color:var(--text)}
+  .results-count{font-size:11px;color:var(--muted)}
+  .date-filter{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .date-filter label{font-size:11px;color:var(--muted);text-transform:none;letter-spacing:0;margin:0}
+  .date-filter input[type=date]{width:auto;font-size:11px;padding:4px 8px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text)}
+  .date-filter input[type=date]:focus{border-color:var(--accent)}
+  .btn-clear-date{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+  .btn-clear-date:hover{color:var(--text);border-color:var(--border2)}
+  .month-select{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer}
+  .month-select:focus{border-color:var(--accent);outline:none}
+  .month-select option{background:#1a1a1f}
+
+  .list{padding:14px 20px;display:flex;flex-direction:column;gap:5px;flex:1}
+  .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;height:180px;color:var(--muted);font-size:13px}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;animation:fadeIn .16s ease;transition:border-color .15s}
+  .card:hover{border-color:var(--border2)}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+  .card-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);min-width:36px;padding-top:2px}
+  .sla-badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;margin-top:3px;letter-spacing:.3px;text-align:center}
+  .sla-ok{background:#22c55e22;color:#22c55e}
+  .sla-warn{background:#f59e0b22;color:#f59e0b}
+  .sla-crit{background:#ef444422;color:#ef4444;animation:sla-pulse 1.8s ease-in-out infinite}
+  .sla-res{background:#6b728018;color:#6b7280}
+  @keyframes sla-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .daily-overlay{position:fixed;inset:0;background:#00000090;z-index:9000;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
+  .daily-modal{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:32px 36px;min-width:400px;max-width:520px;box-shadow:0 24px 60px #0009;display:flex;flex-direction:column;gap:20px}
+  .daily-title{font-size:18px;font-weight:700;color:var(--text)}
+  .daily-sub{font-size:12px;color:var(--muted);margin-top:-14px}
+  .daily-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .daily-kpi{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .daily-kpi-n{font-size:28px;font-weight:700;font-family:'DM Mono',monospace}
+  .daily-kpi-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;text-align:center}
+  .daily-list{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;max-height:160px;overflow-y:auto}
+  .daily-list-title{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+  .daily-list-item{font-size:12px;color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .daily-list-item span{color:var(--muted);font-size:11px}
+  .daily-btn-close{background:var(--accent);border:none;border-radius:10px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:11px;cursor:pointer;width:100%;transition:opacity .15s}
+  .daily-btn-close:hover{opacity:.85}
+  .card-body{flex:1;min-width:0}
+  .card-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px}
+  .card-tipo{font-size:13px;font-weight:600;color:var(--text)}
+  .card-op{font-size:12px;color:var(--muted)}
+  .card-ben{font-size:11px;color:var(--muted);font-style:italic}
+  .card-obs{font-size:12px;color:var(--muted);line-height:1.5;margin-top:2px}
+  .pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:opacity .12s}
+  .pill:hover{opacity:.75}
+  .pill-ab{background:var(--red-dim);color:var(--red)}
+  .pill-and{background:var(--yellow-dim);color:var(--yellow)}
+  .pill-res{background:var(--green-dim);color:var(--green)}
+  .pill-esc{background:var(--orange-dim);color:var(--orange)}
+  .pill-sr{background:#6a1b9a22;color:#b39ddb}
+  .del{background:none;border:none;color:var(--border2);cursor:pointer;font-size:14px;padding:2px;border-radius:4px;transition:color .12s;line-height:1}
+  .del:hover{color:var(--red)}
+  .edit-btn{background:none;border:none;color:var(--border2);cursor:pointer;font-size:13px;padding:2px;border-radius:4px;transition:color .12s;line-height:1}
+  .edit-btn:hover{color:var(--accent)}
+  .edit-panel{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-direction:column;gap:8px}
+  .edit-panel.open{display:flex}
+  .edit-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .edit-row.full{grid-template-columns:1fr}
+  .edit-panel label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}
+  .edit-panel input,.edit-panel select,.edit-panel textarea{font-size:12px;padding:6px 10px}
+  .edit-panel textarea{height:48px}
+  .save-btn{background:var(--accent);border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:600;padding:7px 16px;cursor:pointer;align-self:flex-start}
+  .save-btn:hover{opacity:.85}
+  mark{background:var(--accent-dim);color:var(--accent);border-radius:2px;padding:0 1px}
+
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+  /* ── Abas de navegação ── */
+  .tab-nav{display:flex;background:var(--surface);border-bottom:2px solid var(--border);padding:0 20px;flex-shrink:0}
+  .tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:10px 18px;cursor:pointer;transition:all .15s;margin-bottom:-2px}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab-btn:hover:not(.active){color:var(--text)}
+
+  /* ── Dashboard ── */
+  .dashboard{padding:20px;display:flex;flex-direction:column;gap:16px}
+  .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+  .kpi-n{font-size:26px;font-weight:700;font-family:'DM Mono',monospace;line-height:1.1}
+  .kpi-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:5px}
+  .kpi-sub{font-size:11px;color:var(--muted);margin-top:3px}
+  .dash-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .dash-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+  .dash-title{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+  .mini-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .mini-lbl{font-size:11px;color:var(--text);width:148px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mini-track{flex:1;background:var(--surface2);border-radius:3px;height:7px;overflow:hidden}
+  .mini-fill{height:100%;border-radius:3px;transition:width .4s}
+  .mini-val{font-size:11px;font-weight:600;color:var(--muted);min-width:22px;text-align:right}
+  .no-data{font-size:12px;color:var(--muted);text-align:center;padding:16px 0}
+  .dash-chart-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;overflow:hidden}
+  .dash-chart-card img{width:100%;border-radius:6px;display:block}
+  .dash-op-panel{background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px}
+  .dash-op-header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .dash-op-name{font-size:15px;font-weight:700;color:var(--text)}
+  .dash-op-meta{font-size:11px;color:var(--muted)}
+  .dash-op-body{display:grid;grid-template-columns:1fr 1.3fr;gap:14px;align-items:start}
+  .op-table{display:flex;flex-direction:column;gap:0}
+  .op-table-row{display:grid;grid-template-columns:1fr 38px 44px;align-items:center;gap:8px;padding:7px 10px;border-radius:7px}
+  .op-table-row:nth-child(odd){background:var(--surface2)}
+  .op-table-head{display:grid;grid-template-columns:1fr 38px 44px;gap:8px;padding:4px 10px 8px;border-bottom:1px solid var(--border)}
+  .op-table-head span{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .op-table-head .oth{text-align:right}
+  .op-tipo{font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .op-n{font-size:13px;font-weight:700;color:var(--accent);text-align:right;font-family:'DM Mono',monospace}
+  .op-pct{font-size:10px;color:var(--muted);text-align:right}
+  .op-table-total{display:grid;grid-template-columns:1fr 38px 44px;gap:8px;padding:8px 10px 4px;border-top:1px solid var(--border);margin-top:2px}
+  .op-table-total .op-tipo{font-weight:700;color:var(--muted)}
+  .op-table-total .op-n{color:var(--text)}
+
+  /* ── Toast ── */
+  .toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999;pointer-events:none}
+  .toast{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--text);box-shadow:0 4px 24px rgba(0,0,0,.5);animation:toastIn .2s ease;max-width:320px;pointer-events:auto}
+  .toast.success{border-left:3px solid var(--green)}
+  .toast.error{border-left:3px solid var(--red)}
+  .toast.info{border-left:3px solid var(--accent)}
+  @keyframes toastIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateY(6px)}}
+
+  /* ── Resolução do dia ── */
+  .dash-day-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .dash-day-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+  .dash-day-stats{display:flex;gap:20px;align-items:center;flex:1;flex-wrap:wrap}
+  .dash-day-stat{font-size:13px;color:var(--muted)}
+  .dash-day-stat b{font-family:'DM Mono',monospace;font-weight:700;font-size:15px;color:var(--text)}
+  .dash-day-track{flex:1;min-width:140px;background:var(--surface2);border-radius:4px;height:8px;overflow:hidden}
+  .dash-day-fill{height:100%;border-radius:4px;background:var(--green);transition:width .5s ease}
+  .dash-day-pct{font-size:13px;font-weight:700;font-family:'DM Mono',monospace;white-space:nowrap}
+  .dash-day-empty{font-size:12px;color:var(--muted);font-style:italic}
+
+  /* ── KPI ícone e tendência ── */
+  .kpi-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .kpi-icon{font-size:20px;line-height:1;flex-shrink:0}
+  .kpi-trend{font-size:10px;margin-top:5px;min-height:14px}
+
+  /* ── Tab fade ── */
+  .tab-fade{animation:tabFadeIn .15s ease}
+  @keyframes tabFadeIn{from{opacity:0}to{opacity:1}}
+
+  /* ── Kanban ── */
+  .kb-board{display:flex;gap:12px;padding:16px 20px;overflow-x:auto;align-items:flex-start;flex:1}
+  .kb-col{display:flex;flex-direction:column;min-width:210px;flex:1;max-width:290px;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
+  .kb-col-header{padding:11px 13px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--surface)}
+  .kb-col-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .kb-col-title{font-size:11px;font-weight:600;flex:1;text-transform:uppercase;letter-spacing:.4px}
+  .kb-col-count{font-size:11px;color:var(--muted);background:var(--surface2);border-radius:20px;padding:1px 8px;font-family:'DM Mono',monospace}
+  .kb-col-body{display:flex;flex-direction:column;gap:6px;padding:8px;min-height:60px;max-height:calc(100vh - 168px);overflow-y:auto;transition:background .12s}
+  .kb-col-body.drag-over{background:var(--accent-dim)}
+  .kb-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 11px;cursor:grab;transition:box-shadow .15s,border-color .15s;user-select:none;position:relative}
+  .kb-card:active{cursor:grabbing}
+  .kb-card:hover{border-color:var(--border2);box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  .kb-card.dragging{opacity:.35}
+  .kb-card-tipo{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px;line-height:1.3}
+  .kb-card-meta{font-size:11px;color:var(--muted)}
+  .kb-card-ben{font-size:11px;color:var(--muted);font-style:italic;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kb-card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:6px;border-top:1px solid var(--border)}
+  .kb-card-time{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted)}
+  .kb-empty{font-size:11px;color:var(--muted);text-align:center;padding:20px 8px}
+
+  /* ── Filtro de período do dashboard ── */
+  .dash-filter-bar{display:flex;align-items:center;gap:10px;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-wrap:wrap}
+  .dash-filter-lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+  .dash-period-sel{font-size:12px;padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer;min-width:160px}
+  .dash-period-sel:focus{border-color:var(--accent);outline:none}
+  .dash-period-sel option{background:#1a1a1f}
+  .dash-period-badge{font-size:11px;color:var(--muted);margin-left:4px;font-family:'DM Mono',monospace}
+  .dash-filter-sep{width:1px;height:18px;background:var(--border2);flex-shrink:0}
+
+  /* ── Seleção em massa ── */
+  .bulk-bar{position:fixed;bottom:0;left:320px;right:0;background:var(--surface2);border-top:2px solid var(--accent);padding:11px 20px;display:flex;align-items:center;gap:10px;z-index:200;box-shadow:0 -4px 20px rgba(0,0,0,.4)}
+  .bulk-info{font-size:13px;font-weight:600;color:var(--text);flex:1}
+  .bulk-status-sel{background:var(--surface);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:6px 10px}
+  .bulk-apply{background:var(--accent);border:none;border-radius:7px;color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;padding:7px 16px;cursor:pointer}
+  .bulk-apply:hover{opacity:.88}
+  .bulk-del{background:none;border:1px solid var(--red);border-radius:7px;color:var(--red);font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 12px;cursor:pointer}
+  .bulk-cancel{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;padding:7px;cursor:pointer}
+  .btn-selecionar{background:none;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;padding:5px 12px;cursor:pointer;transition:all .12s;flex-shrink:0}
+  .btn-selecionar:hover{color:var(--text);border-color:var(--border2)}
+  .btn-selecionar.on{border-color:var(--accent);color:var(--accent)}
+  .card-cb{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;display:none;margin-top:4px}
+  .select-mode .card-cb{display:block}
+  .card.selected{border-color:var(--accent)!important;background:var(--accent-dim)!important}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">Demandas CS</div>
+        <div class="logo-sub" id="data-hoje"></div>
+      </div>
+    </div>
+
+    <div class="field"><label>Operadora</label>
+      <select id="f-op">
+        <option value="">— selecione —</option>
+        <option>UNIMED SA</option>
+        <option>UNIMED NORDESTE PAULISTA</option>
+        <option>UNIMED NOROESTE DO PARANA</option>
+        <option>UNIMED FRANCA</option>
+        <option>UNIMED CAMPOS</option>
+        <option>UNIMED JUIZ DE FORA</option>
+        <option>UNIMED GERAIS DE MINAS</option>
+        <option>UNIMED ENCOSTA DA SERRA</option>
+        <option>UNIMED MISSÕES</option>
+        <option>CÍRCULO SAÚDE</option>
+        <option>UNIMED SANTA MARIA</option>
+      </select>
+    </div>
+
+    <div class="row2">
+      <div class="field"><label>Solicitante</label><input id="f-sol" placeholder="Nome" /></div>
+      <div class="field"><label>Tipo</label>
+        <select id="f-tipo">
+          <option value="">— selecione —</option>
+          <option>Link de assinatura</option>
+          <option>Modificar Cadastro</option>
+          <option>Cadastro não localizado</option>
+          <option>Reenvio de assinatura médica</option>
+          <option>Aguardando assinatura do médico</option>
+          <option>Agendamento EQ</option>
+          <option>Reagendamento EQ</option>
+          <option>N° Incorreto</option>
+          <option>Outro</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field"><label>Beneficiário (opcional)</label><input id="f-ben" placeholder="Nome do beneficiário" /></div>
+
+    <div id="wrap-reenvio" style="display:none">
+      <div class="row2">
+        <div class="field"><label>Médica responsável</label>
+          <select id="f-medica">
+            <option value="">— selecione —</option>
+            <option>Dra. Gabriela Paz</option>
+            <option>Dra. Gabriela Fortes</option>
+            <option>Dra. Bruna Nunes</option>
+            <option>Dra. Catherine</option>
+            <option>Dra. Alana</option>
+            <option>Dra. Jessica</option>
+            <option>Dra. Taís</option>
+          </select>
+        </div>
+        <div class="field"><label>Data EQ</label>
+          <input type="date" id="f-dataeq" />
+        </div>
+      </div>
+    </div>
+
+    <div class="field"><label>Status</label>
+      <select id="f-status">
+        <option value="Aberto">Aberto</option>
+        <option value="Em andamento">Em andamento</option>
+        <option value="Resolvido">Resolvido</option>
+        <option value="Escalado">Escalado</option>
+        <option value="Sem resposta">Sem resposta</option>
+      </select>
+    </div>
+
+    <div class="field"><label>Observação rápida</label>
+      <textarea id="f-obs" placeholder="O que aconteceu / como resolveu..."></textarea>
+    </div>
+
+    <button class="btn-add" onclick="addItem()">+ Registrar &nbsp;<span style="opacity:.6;font-weight:400;font-size:11px">Ctrl+Enter</span></button>
+    <div class="export-row">
+      <button class="btn-export" onclick="exportXLSX()">↓ Exportar Excel (.xlsx)</button>
+      <button class="btn-export-cfg" onclick="configExportFolder()" title="Configurar pasta de destino">📁</button>
+    </div>
+    <div class="export-folder-hint" id="export-folder-hint"></div>
+
+    <div class="btn-row3">
+      <button class="btn-bk" onclick="backupJSON()" title="Salva backup em Histórico de Demandas">⬇ Backup</button>
+      <button class="btn-bk" onclick="restoreJSON()" title="Restaurar de um backup">⬆ Restaurar</button>
+      <button class="btn-bk" onclick="window.csApp.openHistorico()" title="Abrir pasta de backups">📁 Histórico</button>
+    </div>
+
+    <div class="hint">Dados salvos em Documentos/Demandas CS/</div>
+  </aside>
+
+  <div class="main">
+    <div class="tab-nav">
+      <button class="tab-btn active" id="tab-demandas" onclick="showTab('demandas')">📋 Demandas</button>
+      <button class="tab-btn" id="tab-dashboard" onclick="showTab('dashboard')">📊 Dashboard</button>
+      <button class="tab-btn" id="tab-kanban" onclick="showTab('kanban')">🗂 Kanban</button>
+    </div>
+    <div id="view-demandas" style="display:contents">
+    <div class="stats">
+      <div class="stat"><span class="stat-n n-all" id="s-total">0</span><span class="stat-l">Total</span></div>
+      <div class="stat"><span class="stat-n n-ab"  id="s-ab">0</span><span class="stat-l">Aberto</span></div>
+      <div class="stat"><span class="stat-n n-and" id="s-and">0</span><span class="stat-l">Andamento</span></div>
+      <div class="stat"><span class="stat-n n-res" id="s-res">0</span><span class="stat-l">Resolvido</span></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-top">
+        <span class="toolbar-title">Demandas</span>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input id="search" placeholder="Buscar por beneficiário, operadora, tipo..." oninput="render()" />
+        </div>
+        <span class="results-count" id="results-count"></span>
+        <button class="btn-selecionar" id="btn-sel" onclick="toggleSelectMode()">☐ Selecionar</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="setFilter('all',this)">Todas</button>
+        <button class="filter-btn" onclick="setFilter('Aberto',this)">Abertas</button>
+        <button class="filter-btn" onclick="setFilter('Em andamento',this)">Em andamento</button>
+        <button class="filter-btn" onclick="setFilter('Resolvido',this)">Resolvidas</button>
+        <button class="filter-btn" onclick="setFilter('Escalado',this)">Escaladas</button>
+      </div>
+      <div class="date-filter">
+        <label>📅</label>
+        <select class="month-select" id="filter-month" onchange="onMonthChange()">
+          <option value="">Todos os meses</option>
+          <option value="01">Janeiro</option>
+          <option value="02">Fevereiro</option>
+          <option value="03">Março</option>
+          <option value="04">Abril</option>
+          <option value="05">Maio</option>
+          <option value="06">Junho</option>
+          <option value="07">Julho</option>
+          <option value="08">Agosto</option>
+          <option value="09">Setembro</option>
+          <option value="10">Outubro</option>
+          <option value="11">Novembro</option>
+          <option value="12">Dezembro</option>
+        </select>
+        <label style="color:var(--muted)">ou por período:</label>
+        <input type="date" id="filter-date-from" onchange="onDateChange()" />
+        <label>até</label>
+        <input type="date" id="filter-date-to" onchange="onDateChange()" />
+        <button class="btn-clear-date" onclick="clearDateFilter()">✕ limpar</button>
+      </div>
+    </div>
+
+    <div class="list" id="list"></div>
+    </div><!-- /view-demandas -->
+    <div id="view-kanban" style="display:none;flex:1;overflow:hidden">
+      <div class="kb-board" id="kb-board"></div>
+    </div>
+    <div id="view-dashboard" style="display:none">
+      <div class="dash-filter-bar">
+        <span class="dash-filter-lbl">📅 Período:</span>
+        <select class="dash-period-sel" id="dash-month" onchange="renderDashboard()">
+          <option value="">Todos os meses</option>
+        </select>
+        <div class="dash-filter-sep"></div>
+        <span class="dash-filter-lbl">🏥 Operadora:</span>
+        <select class="dash-period-sel" id="dash-op" onchange="renderDashboard()">
+          <option value="">Todas</option>
+        </select>
+        <div class="dash-filter-sep"></div>
+        <span class="dash-filter-lbl">📋 Tipo:</span>
+        <select class="dash-period-sel" id="dash-tipo" onchange="renderDashboard()">
+          <option value="">Todos</option>
+        </select>
+        <span class="dash-period-badge" id="dash-period-badge"></span>
+        <button onclick="gerarFechamentoCompleto()" style="margin-left:auto;background:#00843D;border:none;border-radius:8px;color:white;font-size:12px;font-weight:600;padding:7px 16px;cursor:pointer;transition:opacity .15s;white-space:nowrap" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">📚 Fechamento Completo</button>
+      </div>
+      <div class="dashboard" id="dash-content"></div>
+    </div>
+  </div>
+</div>
+<div id="bulk-bar" class="bulk-bar" style="display:none">
+  <span class="bulk-info" id="bulk-count-txt">0 selecionados</span>
+  <span style="font-size:11px;color:var(--muted)">Mudar para:</span>
+  <select class="bulk-status-sel" id="bulk-status-sel">
+    <option value="Aberto">Aberto</option>
+    <option value="Em andamento">Em andamento</option>
+    <option value="Resolvido">Resolvido</option>
+    <option value="Escalado">Escalado</option>
+    <option value="Sem resposta">Sem resposta</option>
+  </select>
+  <button class="bulk-apply" onclick="bulkApply()">✓ Aplicar</button>
+  <button class="bulk-del" onclick="bulkDelete()">✕ Excluir</button>
+  <button class="bulk-cancel" onclick="clearSelect()">Cancelar</button>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script>
+let items = []
+let activeFilter = 'all'
+let selectMode = false
+let selected = new Set()
+let _dashInited = false
+
+function statusColor(s) {
+  if (s === 'Aberto')       return '#EF4444'
+  if (s === 'Em andamento') return '#F59E0B'
+  if (s === 'Resolvido')    return '#10B981'
+  if (s === 'Escalado')     return '#F97316'
+  return '#8B5CF6'
+}
+
+function showToast(msg, type = 'info', duration = 3500) {
+  const el = document.createElement('div')
+  el.className = `toast ${type}`
+  el.textContent = msg
+  document.getElementById('toast-container').appendChild(el)
+  setTimeout(() => {
+    el.style.animation = 'toastOut .2s ease forwards'
+    setTimeout(() => el.remove(), 200)
+  }, duration)
+}
+
+async function load() {
+  try {
+    if (!window.csApp) throw new Error('Bridge não carregada')
+    items = (await window.csApp.loadData()) || []
+  } catch (e) {
+    console.error('Erro ao carregar dados:', e)
+    items = []
+  }
+}
+
+function save() {
+  try { window.csApp && window.csApp.saveData(items) } catch (e) { console.error(e) }
+}
+
+document.getElementById('data-hoje').textContent =
+  new Date().toLocaleDateString('pt-BR', {weekday:'short', day:'2-digit', month:'short'})
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') addItem()
+})
+
+function addItem() {
+  const op     = document.getElementById('f-op').value.trim()
+  const sol    = document.getElementById('f-sol').value.trim()
+  const tipo   = document.getElementById('f-tipo').value
+  const ben    = document.getElementById('f-ben').value.trim()
+  const obs    = document.getElementById('f-obs').value.trim()
+  const medica = document.getElementById('f-medica').value
+  const dataeq = document.getElementById('f-dataeq').value
+  const status = document.getElementById('f-status').value
+  if (!tipo && !obs) { document.getElementById('f-tipo').focus(); return }
+  const now    = new Date()
+  items.unshift({
+    id:    Date.now(),
+    data:  now.toLocaleDateString('pt-BR'),
+    hora:  now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+    op:    op || '—', sol: sol || '—', tipo: tipo || 'Outro',
+    ben, medica, dataeq, obs, status,
+  })
+  save(); render(); clearForm()
+  document.getElementById('f-op').focus()
+}
+
+function clearForm() {
+  ['f-op','f-sol','f-ben','f-obs'].forEach(id => document.getElementById(id).value = '')
+  document.getElementById('f-tipo').value   = ''
+  document.getElementById('f-medica').value = ''
+  document.getElementById('f-dataeq').value = ''
+  document.getElementById('wrap-reenvio').style.display = 'none'
+  document.getElementById('f-status').value = 'Aberto'
+}
+
+function cycleStatus(id) {
+  const order = ['Aberto','Em andamento','Resolvido','Escalado']
+  const item  = items.find(i => i.id === id)
+  if (!item) return
+  const next = order[(order.indexOf(item.status) + 1) % order.length]
+  if (next === 'Resolvido' && item.status !== 'Resolvido') item.resolvidoEm = new Date().toISOString()
+  item.status = next
+  save(); render()
+}
+
+function del(id) {
+  items = items.filter(i => i.id !== id)
+  save(); render()
+}
+
+function setFilter(f, btn) {
+  activeFilter = f
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  render()
+}
+
+function pillClass(s) {
+  if (s === 'Aberto')       return 'pill-ab'
+  if (s === 'Em andamento') return 'pill-and'
+  if (s === 'Resolvido')    return 'pill-res'
+  if (s === 'Sem resposta') return 'pill-sr'
+  return 'pill-esc'
+}
+
+function highlight(text, q) {
+  if (!q || !text) return text || ''
+  const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi')
+  return text.replace(re, '<mark>$1</mark>')
+}
+
+function render() {
+  document.getElementById('s-total').textContent = items.length
+  document.getElementById('s-ab').textContent    = items.filter(i => i.status === 'Aberto').length
+  document.getElementById('s-and').textContent   = items.filter(i => i.status === 'Em andamento').length
+  document.getElementById('s-res').textContent   = items.filter(i => i.status === 'Resolvido').length
+
+  const q           = (document.getElementById('search').value || '').trim().toLowerCase()
+  const filterMonth = document.getElementById('filter-month').value
+  const dateFrom    = document.getElementById('filter-date-from').value
+  const dateTo      = document.getElementById('filter-date-to').value
+
+  function parseDate(str) {
+    if (!str) return null
+    const [d, m, y] = str.split('/')
+    return new Date(y, m - 1, d)
+  }
+  function parseDateISO(str) {
+    if (!str) return null
+    const [y, m, d] = str.split('-')
+    return new Date(y, m - 1, d)
+  }
+
+  let visible = activeFilter === 'all' ? [...items] : items.filter(i => i.status === activeFilter)
+
+  if (filterMonth) {
+    visible = visible.filter(i => { if (!i.data) return false; const [, m] = i.data.split('/'); return m === filterMonth })
+  } else if (dateFrom || dateTo) {
+    const from = parseDateISO(dateFrom)
+    const to   = parseDateISO(dateTo)
+    visible = visible.filter(i => {
+      const d = parseDate(i.data)
+      if (!d) return false
+      if (from && d < from) return false
+      if (to   && d > to)   return false
+      return true
+    })
+  }
+
+  if (q) {
+    visible = visible.filter(i =>
+      (i.ben  && i.ben.toLowerCase().includes(q)) ||
+      (i.op   && i.op.toLowerCase().includes(q))  ||
+      (i.tipo && i.tipo.toLowerCase().includes(q)) ||
+      (i.sol  && i.sol.toLowerCase().includes(q))  ||
+      (i.obs  && i.obs.toLowerCase().includes(q))
+    )
+  }
+
+  const meses = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+  const hasFilter = q || activeFilter !== 'all' || filterMonth || dateFrom || dateTo
+  document.getElementById('results-count').textContent = hasFilter
+    ? (filterMonth ? `${meses[parseInt(filterMonth)]} · ${visible.length} demanda${visible.length !== 1 ? 's' : ''}` : `${visible.length} resultado${visible.length !== 1 ? 's' : ''}`)
+    : ''
+
+  const el = document.getElementById('list')
+  if (!visible.length) {
+    el.innerHTML = `<div class="empty-state"><div style="font-size:28px">😭</div><span>${q ? 'Nenhum resultado para "' + q + '"' : 'Nenhuma demanda aqui'}</span></div>`
+    return
+  }
+
+  el.innerHTML = visible.map(i => {
+    const isR = i.tipo === 'Reenvio de assinatura médica' || i.tipo === 'Aguardando assinatura do médico'
+    const dFmt = i.dataeq ? new Date(i.dataeq + 'T00:00').toLocaleDateString('pt-BR') : ''
+    const sla  = slaInfo(i)
+    return `
+    <div class="card${selected.has(i.id)?' selected':''}" id="card-${i.id}" style="border-left:3px solid ${statusColor(i.status)}" onclick="${selectMode?'toggleSel('+i.id+',event)':''}">
+      <input type="checkbox" class="card-cb" ${selected.has(i.id)?'checked':''} onchange="toggleSel(${i.id},event)" onclick="event.stopPropagation()" />
+      <div style="display:flex;flex-direction:column;align-items:center;min-width:42px;gap:1px">
+        <span class="card-time">${i.hora}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted)">${i.data || ''}</span>
+        ${sla ? `<span class="sla-badge ${sla.cls}">${sla.label}</span>` : ''}
+      </div>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="card-tipo">${highlight(i.tipo, q)}</span>
+          <span class="card-op">${highlight(i.op, q)}</span>
+          ${i.ben ? `<span class="card-ben">${highlight(i.ben, q)}</span>` : ''}
+          <button class="pill ${pillClass(i.status)}" onclick="cycleStatus(${i.id})" title="Clique para mudar status">${i.status}</button>
+        </div>
+        ${i.medica ? `<div class="card-obs" style="color:var(--accent)">👩‍⚕️ ${highlight(i.medica, q)}${dFmt ? ' · 📅 ' + dFmt : ''}</div>` : ''}
+        ${i.obs ? `<div class="card-obs">${highlight(i.obs, q)}</div>` : ''}
+
+        <div class="edit-panel" id="ep-${i.id}">
+          <div class="edit-row">
+            <div class="field"><label>📅 Data do registro</label>
+              <input type="date" id="e-data-${i.id}" value="${toInputDate(i.data)}" />
+            </div>
+            <div class="field"><label>🕐 Horário do registro</label>
+              <input type="time" id="e-hora-${i.id}" value="${i.hora || ''}" />
+            </div>
+          </div>
+          <div class="edit-row">
+            <div class="field"><label>Operadora</label>
+              <select id="e-op-${i.id}">
+                <option value="">— selecione —</option>
+                <option ${i.op==='UNIMED SA'?'selected':''}>UNIMED SA</option>
+                <option ${i.op==='UNIMED NORDESTE PAULISTA'?'selected':''}>UNIMED NORDESTE PAULISTA</option>
+                <option ${i.op==='UNIMED NOROESTE DO PARANA'?'selected':''}>UNIMED NOROESTE DO PARANA</option>
+                <option ${i.op==='UNIMED FRANCA'?'selected':''}>UNIMED FRANCA</option>
+                <option ${i.op==='UNIMED CAMPOS'?'selected':''}>UNIMED CAMPOS</option>
+                <option ${i.op==='UNIMED JUIZ DE FORA'?'selected':''}>UNIMED JUIZ DE FORA</option>
+                <option ${i.op==='UNIMED GERAIS DE MINAS'?'selected':''}>UNIMED GERAIS DE MINAS</option>
+                <option ${i.op==='UNIMED MISSÕES'?'selected':''}>UNIMED MISSÕES</option>
+                <option ${i.op==='CÍRCULO SAÚDE'?'selected':''}>CÍRCULO SAÚDE</option>
+                <option ${i.op==='UNIMED SANTA MARIA'?'selected':''}>UNIMED SANTA MARIA</option>
+                <option ${i.op==='UNIMED ENCOSTA DA SERRA'?'selected':''}>UNIMED ENCOSTA DA SERRA</option>
+              </select>
+            </div>
+            <div class="field"><label>Solicitante</label>
+              <input id="e-sol-${i.id}" value="${i.sol !== '—' ? i.sol : ''}" placeholder="Nome" />
+            </div>
+          </div>
+          <div class="edit-row">
+            <div class="field"><label>Tipo</label>
+              <select id="e-tipo-${i.id}" onchange="toggleEditReenvio(${i.id},this.value)">
+                <option value="">— selecione —</option>
+                <option ${i.tipo==='Link de assinatura'?'selected':''}>Link de assinatura</option>
+                <option ${i.tipo==='Modificar Cadastro'?'selected':''}>Modificar Cadastro</option>
+                <option ${i.tipo==='Cadastro não localizado'?'selected':''}>Cadastro não localizado</option>
+                <option ${i.tipo==='Reenvio de assinatura médica'?'selected':''}>Reenvio de assinatura médica</option>
+                <option ${i.tipo==='Aguardando assinatura do médico'?'selected':''}>Aguardando assinatura do médico</option>
+                <option ${i.tipo==='Agendamento EQ'?'selected':''}>Agendamento EQ</option>
+                <option ${i.tipo==='Reagendamento EQ'?'selected':''}>Reagendamento EQ</option>
+                <option ${i.tipo==='N° Incorreto'?'selected':''}>N° Incorreto</option>
+                <option ${i.tipo==='Outro'?'selected':''}>Outro</option>
+              </select>
+            </div>
+            <div class="field"><label>Beneficiário</label>
+              <input id="e-ben-${i.id}" value="${i.ben || ''}" placeholder="Nome" />
+            </div>
+          </div>
+          <div id="e-wrap-reenvio-${i.id}" style="display:${isR?'block':'none'}">
+            <div class="edit-row">
+              <div class="field"><label>Médica responsável</label>
+                <select id="e-medica-${i.id}">
+                  <option value="">— selecione —</option>
+                  <option ${i.medica==='Dra. Gabriela Paz'?'selected':''}>Dra. Gabriela Paz</option>
+                  <option ${i.medica==='Dra. Gabriela Fortes'?'selected':''}>Dra. Gabriela Fortes</option>
+                  <option ${i.medica==='Dra. Bruna Nunes'?'selected':''}>Dra. Bruna Nunes</option>
+                  <option ${i.medica==='Dra. Catherine'?'selected':''}>Dra. Catherine</option>
+                  <option ${i.medica==='Dra. Alana'?'selected':''}>Dra. Alana</option>
+                  <option ${i.medica==='Dra. Jessica'?'selected':''}>Dra. Jessica</option>
+                  <option ${i.medica==='Dra. Taís'?'selected':''}>Dra. Taís</option>
+                </select>
+              </div>
+              <div class="field"><label>Data EQ</label>
+                <input type="date" id="e-dataeq-${i.id}" value="${i.dataeq || ''}" />
+              </div>
+            </div>
+          </div>
+          <div class="edit-row">
+            <div class="field"><label>Status</label>
+              <select id="e-status-${i.id}">
+                <option ${i.status==='Aberto'?'selected':''}>Aberto</option>
+                <option ${i.status==='Em andamento'?'selected':''}>Em andamento</option>
+                <option ${i.status==='Resolvido'?'selected':''}>Resolvido</option>
+                <option ${i.status==='Escalado'?'selected':''}>Escalado</option>
+                <option ${i.status==='Sem resposta'?'selected':''}>Sem resposta</option>
+              </select>
+            </div>
+          </div>
+          <div class="edit-row full">
+            <div class="field"><label>Observação</label>
+              <textarea id="e-obs-${i.id}">${i.obs || ''}</textarea>
+            </div>
+          </div>
+          <button class="save-btn" onclick="saveEdit(${i.id})">✓ Salvar</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        <button class="del"      onclick="del(${i.id})"        title="Remover">✕</button>
+        <button class="edit-btn" onclick="toggleEdit(${i.id})" title="Editar">✏️</button>
+      </div>
+    </div>`
+  }).join('')
+}
+
+document.getElementById('f-tipo').addEventListener('change', function () {
+  const show = this.value === 'Reenvio de assinatura médica' || this.value === 'Aguardando assinatura do médico'
+  document.getElementById('wrap-reenvio').style.display = show ? 'block' : 'none'
+})
+
+function getFilteredItems() {
+  const fm   = document.getElementById('filter-month').value
+  const from = document.getElementById('filter-date-from').value
+  const to   = document.getElementById('filter-date-to').value
+  let result = [...items]
+  if (fm) {
+    result = result.filter(i => { if (!i.data) return false; const [, m] = i.data.split('/'); return m === fm })
+  } else if (from || to) {
+    const fd = from ? new Date(...from.split('-').map((v, i) => i === 1 ? v - 1 : v)) : null
+    const td = to   ? new Date(...to.split('-').map((v, i) => i === 1 ? v - 1 : v))   : null
+    result = result.filter(i => {
+      if (!i.data) return false
+      const [d, m, y] = i.data.split('/'); const dd = new Date(y, m - 1, d)
+      if (fd && dd < fd) return false
+      if (td && dd > td) return false
+      return true
+    })
+  }
+  return result
+}
+
+function onMonthChange() {
+  if (document.getElementById('filter-month').value) {
+    document.getElementById('filter-date-from').value = ''
+    document.getElementById('filter-date-to').value   = ''
+  }
+  render()
+}
+
+function onDateChange() {
+  if (document.getElementById('filter-date-from').value || document.getElementById('filter-date-to').value)
+    document.getElementById('filter-month').value = ''
+  render()
+}
+
+function clearDateFilter() {
+  document.getElementById('filter-month').value     = ''
+  document.getElementById('filter-date-from').value = ''
+  document.getElementById('filter-date-to').value   = ''
+  render()
+}
+
+// ── SLA ───────────────────────────────────────────────────────────────────
+function slaInfo(item) {
+  if (!item.data) return null
+  const [d, m, y] = item.data.split('/')
+  const [h, min]  = (item.hora || '00:00').split(':')
+  const created   = new Date(+y, +m - 1, +d, +h || 0, +min || 0)
+
+  if (item.status === 'Resolvido') {
+    if (!item.resolvidoEm) return { label: '✓ ?', cls: 'sla-res' }
+    const diffH = (new Date(item.resolvidoEm) - created) / 36e5
+    const diffD = diffH / 24
+    const label = diffD >= 1 ? Math.floor(diffD) + 'd' : (Math.floor(diffH) || '<1') + 'h'
+    return { label: '✓ ' + label, cls: 'sla-res' }
+  }
+
+  const diffH = (Date.now() - created) / 36e5
+  const diffD = diffH / 24
+  if (diffH < 1)  return { label: '< 1h',                 cls: 'sla-ok' }
+  if (diffH < 24) return { label: Math.floor(diffH) + 'h', cls: 'sla-ok' }
+  if (diffD < 3)  return { label: Math.floor(diffD) + 'd', cls: 'sla-warn' }
+  return           { label: Math.floor(diffD) + 'd',        cls: 'sla-crit' }
+}
+
+// ── Resumo das 18h ────────────────────────────────────────────────────────
+function showDailySummary() {
+  const today = new Date().toLocaleDateString('pt-BR')
+  const todayItems   = items.filter(i => i.data === today)
+  const resolvidas   = todayItems.filter(i => i.status === 'Resolvido').length
+  const abertas      = todayItems.length
+  const pendentes    = items.filter(i => i.status !== 'Resolvido')
+
+  document.getElementById('daily-date').textContent =
+    new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })
+  document.getElementById('daily-n-abertas').textContent    = abertas
+  document.getElementById('daily-n-resolvidas').textContent = resolvidas
+  document.getElementById('daily-n-pendentes').textContent  = pendentes.length
+
+  const listEl = document.getElementById('daily-pendentes-list')
+  if (pendentes.length) {
+    listEl.innerHTML =
+      '<div class="daily-list-title">Em aberto / Em andamento</div>' +
+      pendentes.slice(0, 10).map(i => {
+        const sla = slaInfo(i)
+        return `<div class="daily-list-item">
+          <span style="color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${i.op} · ${i.tipo}</span>
+          ${sla ? `<span class="sla-badge ${sla.cls}" style="flex-shrink:0">${sla.label}</span>` : ''}
+        </div>`
+      }).join('') +
+      (pendentes.length > 10 ? `<div style="font-size:11px;color:var(--muted);text-align:center">+${pendentes.length - 10} mais</div>` : '')
+  } else {
+    listEl.innerHTML = '<div style="font-size:13px;color:var(--green);text-align:center;padding:8px 0">🎉 Todas as demandas foram resolvidas hoje!</div>'
+  }
+
+  document.getElementById('modal-daily').style.display = 'flex'
+}
+
+function closeDailyModal() {
+  document.getElementById('modal-daily').style.display = 'none'
+}
+
+function scheduleEndOfDay() {
+  const now    = new Date()
+  const target = new Date(now)
+  target.setHours(18, 0, 0, 0)
+  if (now >= target) target.setDate(target.getDate() + 1)
+  const delay = target - now
+  setTimeout(() => { showDailySummary(); scheduleEndOfDay() }, delay)
+}
+
+function toInputDate(ddmmyyyy) {
+  const parts = (ddmmyyyy || '').split('/')
+  if (parts.length !== 3 || !parts[2]) return ''
+  return parts[2] + '-' + parts[1] + '-' + parts[0]
+}
+
+function toggleEdit(id) {
+  document.getElementById('ep-' + id).classList.toggle('open')
+}
+
+function toggleEditReenvio(id, val) {
+  const w = document.getElementById('e-wrap-reenvio-' + id)
+  if (w) w.style.display = (val === 'Reenvio de assinatura médica' || val === 'Aguardando assinatura do médico') ? 'block' : 'none'
+}
+
+function saveEdit(id) {
+  const item = items.find(i => i.id === id)
+  if (!item) return
+  const rawData = document.getElementById('e-data-' + id).value  // yyyy-mm-dd
+  if (rawData) {
+    const [y, m, d] = rawData.split('-')
+    item.data = `${d}/${m}/${y}`
+  }
+  const rawHora = document.getElementById('e-hora-' + id).value  // HH:MM
+  if (rawHora) item.hora = rawHora
+  item.op     = document.getElementById('e-op-' + id).value    || '—'
+  item.sol    = document.getElementById('e-sol-' + id).value.trim() || '—'
+  item.tipo   = document.getElementById('e-tipo-' + id).value  || item.tipo
+  item.ben    = document.getElementById('e-ben-' + id).value.trim()
+  item.medica = document.getElementById('e-medica-' + id).value
+  item.dataeq = document.getElementById('e-dataeq-' + id).value
+  const prev  = item.status
+  item.status = document.getElementById('e-status-' + id).value
+  item.obs    = document.getElementById('e-obs-' + id).value.trim()
+  if (item.status === 'Resolvido' && prev !== 'Resolvido') item.resolvidoEm = new Date().toISOString()
+  save(); render()
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+function showTab(tab) {
+  const isDash   = tab === 'dashboard'
+  const isKanban = tab === 'kanban'
+  const isDemandas = tab === 'demandas'
+  document.getElementById('view-demandas').style.display  = isDemandas ? 'contents' : 'none'
+  document.getElementById('view-dashboard').style.display = isDash   ? 'block' : 'none'
+  document.getElementById('view-kanban').style.display    = isKanban ? 'flex'  : 'none'
+  document.getElementById('tab-demandas').classList.toggle('active', isDemandas)
+  document.getElementById('tab-dashboard').classList.toggle('active', isDash)
+  document.getElementById('tab-kanban').classList.toggle('active', isKanban)
+  document.querySelector('aside.sidebar').style.display = isDemandas ? 'flex' : 'none'
+  document.querySelector('.app').classList.toggle('dash-mode', !isDemandas)
+  if (isDash)   renderDashboard()
+  if (isKanban) renderKanban()
+  const activeEl = document.getElementById('view-' + tab)
+  if (activeEl) { activeEl.classList.remove('tab-fade'); void activeEl.offsetWidth; activeEl.classList.add('tab-fade') }
+}
+
+// ── Dashboard ──────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+  const now = new Date()
+
+  // ── Popula o seletor de período com meses existentes nos dados ──
+  const sel = document.getElementById('dash-month')
+  const prevVal = sel.value
+  const monthSet = new Set()
+  items.forEach(i => {
+    if (!i.data) return
+    const parts = i.data.split('/')
+    if (parts.length === 3) monthSet.add(`${parts[2]}-${parts[1]}`)
+  })
+  const monthOpts = [...monthSet].sort().reverse()
+  sel.innerHTML = '<option value="">Todos os meses</option>' +
+    monthOpts.map(ym => {
+      const [y, m] = ym.split('-')
+      return `<option value="${ym}">${MESES[parseInt(m) - 1]} ${y}</option>`
+    }).join('')
+
+  // Primeira abertura: padrão para mês atual. Depois: preserva o que o usuário escolheu (incluindo "")
+  if (!_dashInited) {
+    const curYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    if (monthOpts.includes(curYM)) sel.value = curYM
+    _dashInited = true
+  } else {
+    sel.value = prevVal
+  }
+
+  const selectedYM = sel.value
+  const [selY, selM] = selectedYM ? selectedYM.split('-') : []
+  const chartYear = selY || String(now.getFullYear())
+  const periodoLabel = selectedYM ? `${MESES[parseInt(selM) - 1]} ${selY}` : 'Todos os meses'
+  // ── Popula filtro de operadora ──
+  const opSel  = document.getElementById('dash-op')
+  const prevOp = opSel.value
+  const allOps = [...new Set(items.map(i => i.op).filter(op => op && op !== '—'))].sort()
+  opSel.innerHTML = '<option value="">Todas</option>' +
+    allOps.map(op => `<option value="${op}">${op}</option>`).join('')
+  opSel.value = prevOp
+  const selOp = opSel.value
+
+  // ── Popula filtro de tipo ──
+  const tipoSel  = document.getElementById('dash-tipo')
+  const prevTipo = tipoSel.value
+  const allTipos = [...new Set(items.map(i => i.tipo).filter(Boolean))].sort()
+  tipoSel.innerHTML = '<option value="">Todos</option>' +
+    allTipos.map(t => `<option value="${t}">${t}</option>`).join('')
+  tipoSel.value = prevTipo
+  const selTipo = tipoSel.value
+
+  // ── Filtra itens por todos os filtros ──
+  let dashItems = items
+  if (selectedYM) dashItems = dashItems.filter(i => { if (!i.data) return false; const [,m,y]=i.data.split('/'); return `${y}-${m}` === selectedYM })
+  if (selOp)      dashItems = dashItems.filter(i => i.op === selOp)
+  if (selTipo)    dashItems = dashItems.filter(i => i.tipo === selTipo)
+
+  document.getElementById('dash-period-badge').textContent =
+    dashItems.length !== items.length ? `· ${dashItems.length} demanda${dashItems.length !== 1 ? 's' : ''}` : ''
+
+  const total      = dashItems.length
+  const abertos    = dashItems.filter(i => i.status === 'Aberto').length
+  const andamento  = dashItems.filter(i => i.status === 'Em andamento').length
+  const resolvidos = dashItems.filter(i => i.status === 'Resolvido').length
+  const escalados  = dashItems.filter(i => i.status === 'Escalado').length
+  const taxaRes    = total ? Math.round(resolvidos / total * 100) : 0
+  const taxaEsc    = total ? Math.round(escalados / total * 100) : 0
+
+  const comResolucao = dashItems.filter(i => i.status === 'Resolvido' && i.resolvidoEm && i.data)
+  let tempoMedio = null
+  if (comResolucao.length) {
+    const soma = comResolucao.reduce((acc, i) => {
+      const [d, m, y] = i.data.split('/')
+      return acc + Math.max(0, (new Date(i.resolvidoEm) - new Date(y, m-1, d)) / 86400000)
+    }, 0)
+    tempoMedio = Math.round(soma / comResolucao.length * 10) / 10
+  }
+
+  const hoje       = now.toLocaleDateString('pt-BR')
+  const todayAll   = items.filter(i => i.data === hoje)
+  const todayTotal = todayAll.length
+  const todayRes   = todayAll.filter(i => i.status === 'Resolvido').length
+  const todayPend  = todayAll.filter(i => i.status !== 'Resolvido' && i.status !== 'Sem resposta').length
+  const todaySR    = todayAll.filter(i => i.status === 'Sem resposta').length
+  const todayPct   = todayTotal ? Math.round(todayRes / todayTotal * 100) : 0
+  const subTotal   = selectedYM ? `${total} no período` : `${todayTotal} registradas hoje`
+
+  const overdue = dashItems.filter(i => {
+    if (i.status !== 'Em andamento' || !i.data) return false
+    const [d, m, y] = i.data.split('/')
+    return (now - new Date(y, m-1, d)) / 86400000 >= 1
+  })
+
+  const cnt = (arr, key) => {
+    const o = {}
+    arr.forEach(i => { const k = i[key] || '—'; o[k] = (o[k] || 0) + 1 })
+    return Object.entries(o).sort((a, b) => b[1] - a[1])
+  }
+  const opEntries   = cnt(dashItems, 'op').slice(0, 6)
+  const tipoEntries = cnt(dashItems, 'tipo').slice(0, 6)
+  const maxOp   = opEntries[0]?.[1]   || 1
+  const maxTipo = tipoEntries[0]?.[1] || 1
+
+  const bar = (lbl, val, max, cor = 'var(--accent)') =>
+    `<div class="mini-row">
+      <span class="mini-lbl" title="${lbl}">${lbl}</span>
+      <div class="mini-track"><div class="mini-fill" style="width:${Math.round(val/max*100)}%;background:${cor}"></div></div>
+      <span class="mini-val">${val}</span>
+    </div>`
+
+  const ST_COR = { 'Aberto':'#EF4444','Em andamento':'#F59E0B','Resolvido':'#10B981','Escalado':'#F97316','Sem resposta':'#8B5CF6' }
+
+  // Tendência vs mês anterior
+  const getPrevYM = ym => { const [y,m]=ym.split('-').map(Number); return m===1?`${y-1}-12`:`${y}-${String(m-1).padStart(2,'0')}` }
+  const refYM   = selectedYM || `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`
+  const prevYM  = getPrevYM(refYM)
+  const prevIt  = items.filter(i => { if(!i.data)return false; const[,m,y]=i.data.split('/'); return `${y}-${m}`===prevYM })
+  const pTotal  = prevIt.length
+  const pRes    = pTotal ? Math.round(prevIt.filter(i=>i.status==='Resolvido').length/pTotal*100) : 0
+  const pEsc    = pTotal ? Math.round(prevIt.filter(i=>i.status==='Escalado').length/pTotal*100) : 0
+  const pAnd    = prevIt.filter(i=>i.status==='Em andamento').length
+  const pAb     = prevIt.filter(i=>i.status==='Aberto').length
+  const tr = (curr, prev, lowerBetter=false) => {
+    if (!prev) return ''
+    const diff = curr - prev
+    if (diff === 0) return `<span style="color:var(--muted)">= igual ao mês ant.</span>`
+    const pct = Math.abs(Math.round(diff/prev*100))
+    const up = diff > 0
+    const good = lowerBetter ? !up : up
+    return `<span style="color:${good?'var(--green)':'var(--red)'}">${up?'↑':'↓'} ${pct}% vs mês ant.</span>`
+  }
+
+  const topoTiposB64 = _chartTopTiposMes(dashItems, chartYear)
+  const topoOpsB64   = selOp
+    ? _chartTiposResume(dashItems, selOp.length > 26 ? selOp.slice(0, 24) + '…' : selOp)
+    : _chartTopOpsMes(dashItems, chartYear)
+
+  document.getElementById('dash-content').innerHTML = total === 0 ? `
+    <div class="empty-state" style="height:260px">
+      <div style="font-size:32px">📭</div>
+      <span>Sem demandas em ${periodoLabel}</span>
+    </div>` : `
+  <div class="dash-day-bar">
+    <span class="dash-day-label">📅 Hoje</span>
+    ${todayTotal === 0
+      ? `<span class="dash-day-empty">Nenhuma demanda registrada hoje ainda</span>`
+      : `<div class="dash-day-stats">
+          <div class="dash-day-stat"><b>${todayTotal}</b> registradas</div>
+          <div class="dash-day-stat" style="color:var(--green)"><b>${todayRes}</b> resolvidas</div>
+          <div class="dash-day-stat" style="color:var(--yellow)"><b>${todayPend}</b> pendentes</div>
+          ${todaySR ? `<div class="dash-day-stat" style="color:#8B5CF6"><b>${todaySR}</b> sem resposta</div>` : ''}
+        </div>
+        <div class="dash-day-track"><div class="dash-day-fill" style="width:${todayPct}%"></div></div>
+        <span class="dash-day-pct" style="color:${todayPct>=80?'var(--green)':todayPct>=40?'var(--yellow)':'var(--red)'}">${todayPct}%</span>`
+    }
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-top"><div class="kpi-icon">📋</div><div class="kpi-n">${total}</div></div><div class="kpi-l">Total de demandas</div><div class="kpi-trend">${tr(total,pTotal)}</div></div>
+    <div class="kpi"><div class="kpi-top"><div class="kpi-icon">🔴</div><div class="kpi-n" style="color:var(--red)">${abertos}</div></div><div class="kpi-l">Em aberto</div><div class="kpi-trend">${overdue.length ? `<span style="color:var(--red)">⚠ ${overdue.length} em and. há +1 dia</span>` : tr(abertos,pAb,true)}</div></div>
+    <div class="kpi"><div class="kpi-top"><div class="kpi-icon">✅</div><div class="kpi-n" style="color:var(--green)">${taxaRes}%</div></div><div class="kpi-l">Taxa de resolução</div><div class="kpi-trend">${tr(taxaRes,pRes)}</div></div>
+    <div class="kpi"><div class="kpi-top"><div class="kpi-icon">🔄</div><div class="kpi-n" style="color:var(--yellow)">${andamento}</div></div><div class="kpi-l">Em andamento</div><div class="kpi-trend">${tr(andamento,pAnd,true)}</div></div>
+    <div class="kpi"><div class="kpi-top"><div class="kpi-icon">⚡</div><div class="kpi-n" style="color:var(--orange)">${taxaEsc}%</div></div><div class="kpi-l">Taxa de escalamento</div><div class="kpi-trend">${tr(taxaEsc,pEsc,true)}</div></div>
+    <div class="kpi"><div class="kpi-top"><div class="kpi-icon">⏱</div><div class="kpi-n" style="color:var(--accent)">${tempoMedio !== null ? tempoMedio + 'd' : '—'}</div></div><div class="kpi-l">Tempo médio resolução</div><div class="kpi-trend"><span style="color:var(--muted)">${comResolucao.length} demandas com dado</span></div></div>
+  </div>
+  ${selOp ? (() => {
+    const allTipos = cnt(dashItems, 'tipo')
+    const opRows = allTipos.map(([t, n]) =>
+      `<div class="op-table-row">
+        <span class="op-tipo" title="${t}">${t}</span>
+        <span class="op-n">${n}</span>
+        <span class="op-pct">${Math.round(n / total * 100)}%</span>
+      </div>`).join('')
+    return `
+    <div class="dash-op-panel">
+      <div class="dash-op-header">
+        <span class="dash-op-name">🏥 ${selOp}</span>
+        <span class="dash-op-meta">${total} demandas · ${periodoLabel}</span>
+        <button onclick="gerarFechamento()" style="margin-left:auto;background:#F47B20;border:none;border-radius:8px;color:white;font-size:12px;font-weight:600;padding:7px 16px;cursor:pointer;transition:opacity .15s;white-space:nowrap" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">📄 Gerar Fechamento</button>
+      </div>
+      <div class="dash-op-body">
+        <div class="op-table">
+          <div class="op-table-head">
+            <span>Tipo de Demanda</span>
+            <span class="oth">Qtd</span>
+            <span class="oth">%</span>
+          </div>
+          ${opRows}
+          <div class="op-table-total">
+            <span class="op-tipo">TOTAL</span>
+            <span class="op-n" style="color:var(--text)">${total}</span>
+            <span class="op-pct">100%</span>
+          </div>
+        </div>
+        <div class="dash-chart-card" style="border:none;padding:0;background:transparent">
+          <img src="data:image/png;base64,${topoOpsB64}" alt="Tipos ${selOp}" />
+        </div>
+      </div>
+    </div>`
+  })() : `
+  <div class="dash-row">
+    <div class="dash-card">
+      <div class="dash-title">Operadoras — ${periodoLabel}</div>
+      ${opEntries.length ? opEntries.map(([op, n]) => bar(op, n, maxOp, '#F47B20')).join('') : '<div class="no-data">Sem dados</div>'}
+    </div>
+    <div class="dash-card">
+      <div class="dash-title">Tipo de demanda — ${periodoLabel}</div>
+      ${tipoEntries.length ? tipoEntries.map(([t, n]) => bar(t, n, maxTipo)).join('') : '<div class="no-data">Sem dados</div>'}
+    </div>
+  </div>
+  <div class="dash-row">
+    <div class="dash-chart-card">
+      <img src="data:image/png;base64,${topoTiposB64}" alt="Top 3 tipos por mês" />
+    </div>
+    <div class="dash-chart-card">
+      <img src="data:image/png;base64,${topoOpsB64}" alt="Top 3 operadoras por mês" />
+    </div>
+  </div>`}
+  <div class="dash-row">
+    <div class="dash-card">
+      <div class="dash-title">Status — ${periodoLabel}</div>
+      ${['Aberto','Em andamento','Resolvido','Escalado','Sem resposta'].map(s => {
+        const n = dashItems.filter(i => i.status === s).length
+        return n > 0 ? bar(s, n, total, ST_COR[s]) : ''
+      }).join('')}
+    </div>
+    <div class="dash-card">
+      <div class="dash-title">Em andamento há mais de 1 dia</div>
+      ${overdue.length === 0
+        ? '<div class="no-data" style="color:var(--green)">✓ Tudo em dia!</div>'
+        : overdue.slice(0, 8).map(i => {
+            const [d, m, y] = i.data.split('/')
+            const dias = Math.floor((now - new Date(y, m-1, d)) / 86400000)
+            return `<div class="mini-row">
+              <span class="mini-lbl" title="${i.ben || i.tipo}">${i.ben || i.tipo || '—'}</span>
+              <span style="font-size:10px;color:var(--muted);flex:1;overflow:hidden;white-space:nowrap">${i.op || ''}</span>
+              <span style="font-size:11px;color:var(--red);font-weight:600;margin-left:8px">${dias}d</span>
+            </div>`
+          }).join('')
+      }
+    </div>
+  </div>`
+}
+
+// ── Seleção em massa ───────────────────────────────────────────────────────
+function toggleSelectMode() {
+  selectMode = !selectMode
+  selected.clear()
+  const btn = document.getElementById('btn-sel')
+  btn.classList.toggle('on', selectMode)
+  btn.textContent = selectMode ? '✓ Selecionando' : '☐ Selecionar'
+  document.getElementById('list').classList.toggle('select-mode', selectMode)
+  document.getElementById('bulk-bar').style.display = selectMode ? 'flex' : 'none'
+  render()
+}
+
+function toggleSel(id, e) {
+  if (!selectMode) return
+  if (e) e.stopPropagation()
+  if (selected.has(id)) selected.delete(id)
+  else selected.add(id)
+  document.getElementById('bulk-count-txt').textContent = `${selected.size} selecionado${selected.size !== 1 ? 's' : ''}`
+  const card = document.getElementById('card-' + id)
+  if (card) {
+    card.classList.toggle('selected', selected.has(id))
+    const cb = card.querySelector('.card-cb')
+    if (cb) cb.checked = selected.has(id)
+  }
+}
+
+function clearSelect() {
+  selectMode = false; selected.clear()
+  const btn = document.getElementById('btn-sel')
+  btn.classList.remove('on'); btn.textContent = '☐ Selecionar'
+  document.getElementById('list').classList.remove('select-mode')
+  document.getElementById('bulk-bar').style.display = 'none'
+  render()
+}
+
+function bulkApply() {
+  if (!selected.size) return
+  const st = document.getElementById('bulk-status-sel').value
+  items.forEach(i => {
+    if (!selected.has(i.id)) return
+    if (st === 'Resolvido' && i.status !== 'Resolvido') i.resolvidoEm = new Date().toISOString()
+    i.status = st
+  })
+  save(); clearSelect()
+}
+
+function bulkDelete() {
+  if (!selected.size) return
+  if (!confirm(`Excluir ${selected.size} demanda${selected.size !== 1 ? 's' : ''}?`)) return
+  items = items.filter(i => !selected.has(i.id))
+  save(); clearSelect()
+}
+
+// ── Kanban ────────────────────────────────────────────────────────────────
+const KB_COLS = [
+  { status: 'Aberto',       dot: '#EF4444', cor: '#EF4444' },
+  { status: 'Em andamento', dot: '#F59E0B', cor: '#F59E0B' },
+  { status: 'Escalado',     dot: '#F97316', cor: '#F97316' },
+  { status: 'Sem resposta', dot: '#8B5CF6', cor: '#8B5CF6' },
+  { status: 'Resolvido',    dot: '#10B981', cor: '#10B981' },
+]
+
+let _dragId = null
+
+function onDragStart(e, id) {
+  _dragId = id
+  e.dataTransfer.effectAllowed = 'move'
+  setTimeout(() => document.getElementById('kb-card-' + id)?.classList.add('dragging'), 0)
+}
+function onDragEnd(id) {
+  document.getElementById('kb-card-' + id)?.classList.remove('dragging')
+  _dragId = null
+}
+function onDragOver(e) {
+  e.preventDefault()
+  e.currentTarget.classList.add('drag-over')
+}
+function onDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over')
+}
+function onDrop(e, status) {
+  e.preventDefault()
+  e.currentTarget.classList.remove('drag-over')
+  if (_dragId === null) return
+  const item = items.find(i => i.id === _dragId)
+  if (!item || item.status === status) return
+  if (status === 'Resolvido' && item.status !== 'Resolvido') item.resolvidoEm = new Date().toISOString()
+  item.status = status
+  save(); renderKanban()
+}
+
+function renderKanban() {
+  document.getElementById('kb-board').innerHTML = KB_COLS.map(col => {
+    const colItems = items.filter(i => i.status === col.status)
+    return `
+    <div class="kb-col">
+      <div class="kb-col-header">
+        <div class="kb-col-dot" style="background:${col.dot}"></div>
+        <span class="kb-col-title" style="color:${col.cor}">${col.status}</span>
+        <span class="kb-col-count">${colItems.length}</span>
+      </div>
+      <div class="kb-col-body"
+        ondragover="onDragOver(event)"
+        ondragleave="onDragLeave(event)"
+        ondrop="onDrop(event,'${col.status}')">
+        ${colItems.length === 0
+          ? '<div class="kb-empty">Sem demandas</div>'
+          : colItems.map(i => `
+            <div class="kb-card" id="kb-card-${i.id}"
+              style="border-left:3px solid ${col.dot}"
+              draggable="true"
+              ondragstart="onDragStart(event,${i.id})"
+              ondragend="onDragEnd(${i.id})">
+              <div class="kb-card-tipo">${i.tipo || 'Outro'}</div>
+              <div class="kb-card-meta">${i.op || '—'}</div>
+              ${i.ben ? `<div class="kb-card-ben">${i.ben}</div>` : ''}
+              <div class="kb-card-footer">
+                <span class="kb-card-time">${i.data || ''} ${i.hora || ''}</span>
+                <button class="del" onclick="del(${i.id})" title="Remover">✕</button>
+              </div>
+            </div>`).join('')
+        }
+      </div>
+    </div>`
+  }).join('')
+}
+
+// ── Geração de gráficos (Canvas → PNG base64) ─────────────────────────────
+
+function _mkC(w, h) { const c = document.createElement('canvas'); c.width=w; c.height=h; return c }
+
+function _base(ctx, W, H, title) {
+  ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,W,H)
+  ctx.strokeStyle = '#E5E7EB'; ctx.lineWidth = 1
+  ctx.strokeRect(0.5, 0.5, W-1, H-1)
+  ctx.font = 'bold 15px Arial, sans-serif'
+  ctx.fillStyle = '#111827'; ctx.textAlign = 'center'
+  ctx.fillText(title, W/2, 32)
+  ctx.fillStyle = '#F47B20'; ctx.fillRect(W/2 - 50, 40, 100, 2)
+}
+
+function _b64(canvas) { return canvas.toDataURL('image/png').split(',')[1] }
+
+function _chartBars(data, labels, title) {
+  const W = 900, H = 440, c = _mkC(W, H), ctx = c.getContext('2d')
+  _base(ctx, W, H, title)
+  const PAD = {t:58,r:30,b:52,l:50}, pw = W-PAD.l-PAD.r, ph = H-PAD.t-PAD.b
+  const max = Math.max(...data, 1), n = data.length
+  const slotW = pw/n, barW = slotW*0.6, off = (slotW-barW)/2
+  for (let i=0; i<=5; i++) {
+    const v = Math.ceil(max/5*i), y = PAD.t + ph - (v/max)*ph
+    ctx.strokeStyle='#F3F4F6'; ctx.lineWidth=1
+    ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(W-PAD.r,y); ctx.stroke()
+    ctx.font='10px Arial,sans-serif'; ctx.fillStyle='#9CA3AF'; ctx.textAlign='right'
+    if (v>0) ctx.fillText(v, PAD.l-8, y+4)
+  }
+  ctx.strokeStyle='#D1D5DB'; ctx.lineWidth=1.5
+  ctx.beginPath(); ctx.moveTo(PAD.l,PAD.t+ph); ctx.lineTo(W-PAD.r,PAD.t+ph); ctx.stroke()
+  data.forEach((v,i) => {
+    const x = PAD.l + i*slotW + off
+    const bh = v>0 ? Math.max((v/max)*ph, 2) : 0
+    const y = PAD.t+ph-bh
+    if (bh > 0) {
+      const g = ctx.createLinearGradient(x,y,x,PAD.t+ph)
+      g.addColorStop(0,'#F9A65C'); g.addColorStop(1,'#E8681A')
+      ctx.fillStyle = g; ctx.fillRect(x,y,barW,bh)
+    }
+    if (v>0) {
+      ctx.font='bold 11px Arial,sans-serif'; ctx.fillStyle='#374151'; ctx.textAlign='center'
+      ctx.fillText(v, x+barW/2, y-6)
+    }
+    ctx.font='10px Arial,sans-serif'; ctx.fillStyle='#6B7280'; ctx.textAlign='center'
+    ctx.fillText(labels[i], x+barW/2, PAD.t+ph+17)
+  })
+  return _b64(c)
+}
+
+function _chartHBars(data, labels, title) {
+  const maxI = Math.min(data.length, 9)
+  const W = 900, H = 440, c = _mkC(W, H), ctx = c.getContext('2d')
+  _base(ctx, W, H, title)
+  const PAD = {t:58,r:90,b:20,l:230}
+  const pw = W-PAD.l-PAD.r, ph = H-PAD.t-PAD.b
+  const rowH = ph/maxI, max = Math.max(...data.slice(0,maxI), 1)
+  for (let i=0; i<maxI; i++) {
+    const v = data[i], bh = Math.min(rowH*0.55, 26)
+    const y = PAD.t + i*rowH + (rowH-bh)/2, bw = (v/max)*pw
+    ctx.fillStyle = i%2===0 ? '#FAFAFA' : '#FFF4ED'
+    ctx.fillRect(PAD.l, PAD.t+i*rowH, pw, rowH)
+    if (bw > 0) {
+      const g = ctx.createLinearGradient(PAD.l,0,PAD.l+bw,0)
+      g.addColorStop(0,'#F47B20'); g.addColorStop(1,'#F9A65C')
+      ctx.fillStyle = g; ctx.fillRect(PAD.l, y, bw, bh)
+    }
+    const lbl = (labels[i]||'').length > 28 ? (labels[i]||'').slice(0,26)+'…' : (labels[i]||'')
+    ctx.font='12px Arial,sans-serif'; ctx.fillStyle='#374151'; ctx.textAlign='right'
+    ctx.fillText(lbl, PAD.l-10, y+bh/2+4)
+    ctx.font='bold 12px Arial,sans-serif'; ctx.fillStyle='#1F2937'; ctx.textAlign='left'
+    ctx.fillText(v, PAD.l+bw+8, y+bh/2+4)
+  }
+  return _b64(c)
+}
+
+function _chartDonut(data, labels, colors, title) {
+  const W = 900, H = 440, c = _mkC(W, H), ctx = c.getContext('2d')
+  _base(ctx, W, H, title)
+  const total = data.reduce((a,b)=>a+b, 0)
+  if (!total) {
+    ctx.font='14px Arial,sans-serif'; ctx.fillStyle='#9CA3AF'; ctx.textAlign='center'
+    ctx.fillText('Sem dados', W/2, H/2); return _b64(c)
+  }
+  const cx=W*0.36, cy=H/2+15, R=138, r=82
+  let angle=-Math.PI/2
+  data.forEach((v,i) => {
+    if (!v) return
+    const sw=(v/total)*Math.PI*2
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R,angle,angle+sw); ctx.closePath()
+    ctx.fillStyle=colors[i]; ctx.fill()
+    ctx.strokeStyle='#FFFFFF'; ctx.lineWidth=3; ctx.stroke()
+    angle+=sw
+  })
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle='#FFFFFF'; ctx.fill()
+  ctx.font='bold 28px Arial,sans-serif'; ctx.fillStyle='#111827'; ctx.textAlign='center'
+  ctx.fillText(total, cx, cy+8)
+  ctx.font='12px Arial,sans-serif'; ctx.fillStyle='#6B7280'
+  ctx.fillText('demandas', cx, cy+26)
+  const lx=W*0.62
+  const active = data.map((v,i)=>({v,i})).filter(e=>e.v>0)
+  const lStart = H/2 - (active.length*42)/2 + 8
+  active.forEach(({v,i},li) => {
+    const ly = lStart+li*44
+    ctx.fillStyle=colors[i]; ctx.fillRect(lx,ly,16,16)
+    ctx.font='12px Arial,sans-serif'; ctx.fillStyle='#374151'; ctx.textAlign='left'
+    ctx.fillText(labels[i], lx+24, ly+12)
+    ctx.font='bold 12px Arial,sans-serif'; ctx.fillStyle='#111827'
+    ctx.fillText(`${v}  (${Math.round(v/total*100)}%)`, lx+24, ly+28)
+  })
+  return _b64(c)
+}
+
+function _chartTopTiposMes(its, year) {
+  const W = 900, H = 300, c = _mkC(W, H), ctx = c.getContext('2d')
+  _base(ctx, W, H, `Top 3 Tipos de Demanda por Mês — ${year}`)
+
+  const yrItems = its.filter(i => i.data && i.data.split('/')[2] === String(year))
+  const typeCnt = {}
+  yrItems.forEach(i => { const t = i.tipo || 'Outro'; typeCnt[t] = (typeCnt[t] || 0) + 1 })
+  const top3 = Object.entries(typeCnt).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => e[0])
+
+  if (!top3.length) {
+    ctx.font = '14px Arial,sans-serif'; ctx.fillStyle = '#9CA3AF'; ctx.textAlign = 'center'
+    ctx.fillText('Sem dados para este ano', W / 2, H / 2)
+    return _b64(c)
+  }
+
+  const COLORS = ['#F47B20', '#7C6AF7', '#10B981']
+  const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+
+  const data = Array(12).fill(null).map(() => top3.map(() => 0))
+  yrItems.forEach(i => {
+    const parts = i.data.split('/')
+    const mi = parseInt(parts[1]) - 1
+    const ti = top3.indexOf(i.tipo || 'Outro')
+    if (ti >= 0 && mi >= 0 && mi < 12) data[mi][ti]++
+  })
+
+  const maxVal = Math.max(...data.flat(), 1)
+  // PAD.b=50 reserva espaço para labels do eixo X + legenda em baixo
+  const PAD = { t: 48, r: 30, b: 50, l: 40 }
+  const pw = W - PAD.l - PAD.r, ph = H - PAD.t - PAD.b
+  const groupW = pw / 12
+  const barW = Math.min(groupW * 0.2, 16)
+  const barGap = 3
+  const groupBarW = top3.length * barW + (top3.length - 1) * barGap
+
+  // grid
+  for (let i = 0; i <= 5; i++) {
+    const v = Math.ceil(maxVal / 5 * i)
+    const y = PAD.t + ph - (v / maxVal) * ph
+    ctx.strokeStyle = '#F3F4F6'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(W - PAD.r, y); ctx.stroke()
+    if (v > 0) {
+      ctx.font = '10px Arial,sans-serif'; ctx.fillStyle = '#9CA3AF'; ctx.textAlign = 'right'
+      ctx.fillText(v, PAD.l - 6, y + 4)
+    }
+  }
+  ctx.strokeStyle = '#D1D5DB'; ctx.lineWidth = 1.5
+  ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t + ph); ctx.lineTo(W - PAD.r, PAD.t + ph); ctx.stroke()
+
+  // barras
+  data.forEach((mData, mi) => {
+    const groupX = PAD.l + mi * groupW + (groupW - groupBarW) / 2
+    mData.forEach((v, ti) => {
+      const x = groupX + ti * (barW + barGap)
+      const bh = v > 0 ? Math.max((v / maxVal) * ph, 2) : 0
+      const y = PAD.t + ph - bh
+      if (bh > 0) {
+        ctx.fillStyle = COLORS[ti]
+        ctx.fillRect(x, y, barW, bh)
+        if (bh > 16) {
+          ctx.font = 'bold 9px Arial,sans-serif'
+          ctx.fillStyle = '#fff'; ctx.textAlign = 'center'
+          ctx.fillText(v, x + barW / 2, y + bh / 2 + 3)
+        }
+      }
+    })
+    ctx.font = '10px Arial,sans-serif'; ctx.fillStyle = '#6B7280'; ctx.textAlign = 'center'
+    ctx.fillText(MONTHS[mi], PAD.l + mi * groupW + groupW / 2, PAD.t + ph + 15)
+  })
+
+  // legenda em baixo, com medição real de texto para não cortar
+  ctx.font = '11px Arial,sans-serif'
+  const legItems = top3.map((tipo, i) => ({ lbl: tipo, color: COLORS[i], tw: ctx.measureText(tipo).width }))
+  const legTotalW = legItems.reduce((a, it) => a + 14 + 5 + it.tw, 0) + (legItems.length - 1) * 22
+  let legX = W / 2 - legTotalW / 2
+  const legY = H - 10
+  legItems.forEach(({ lbl, color, tw }) => {
+    ctx.fillStyle = color; ctx.fillRect(legX, legY - 12, 12, 12)
+    ctx.fillStyle = '#374151'; ctx.textAlign = 'left'
+    ctx.fillText(lbl, legX + 16, legY)
+    legX += 16 + tw + 22
+  })
+
+  return _b64(c)
+}
+
+function _chartTopOpsMes(its, year) {
+  const W = 900, H = 300, c = _mkC(W, H), ctx = c.getContext('2d')
+  _base(ctx, W, H, `Top 3 Operadoras por Mês — ${year}`)
+
+  const yrItems = its.filter(i => i.data && i.data.split('/')[2] === String(year))
+  const opCnt = {}
+  yrItems.forEach(i => { const t = i.op || '—'; opCnt[t] = (opCnt[t] || 0) + 1 })
+  const top3 = Object.entries(opCnt).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => e[0])
+
+  if (!top3.length) {
+    ctx.font = '14px Arial,sans-serif'; ctx.fillStyle = '#9CA3AF'; ctx.textAlign = 'center'
+    ctx.fillText('Sem dados para este ano', W / 2, H / 2)
+    return _b64(c)
+  }
+
+  const COLORS = ['#3B82F6', '#F59E0B', '#EC4899']
+  const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
+
+  const data = Array(12).fill(null).map(() => top3.map(() => 0))
+  yrItems.forEach(i => {
+    const parts = i.data.split('/')
+    const mi = parseInt(parts[1]) - 1
+    const ti = top3.indexOf(i.op || '—')
+    if (ti >= 0 && mi >= 0 && mi < 12) data[mi][ti]++
+  })
+
+  const maxVal = Math.max(...data.flat(), 1)
+  const PAD = { t: 48, r: 30, b: 50, l: 40 }
+  const pw = W - PAD.l - PAD.r, ph = H - PAD.t - PAD.b
+  const groupW = pw / 12
+  const barW = Math.min(groupW * 0.2, 16)
+  const barGap = 3
+  const groupBarW = top3.length * barW + (top3.length - 1) * barGap
+
+  for (let i = 0; i <= 5; i++) {
+    const v = Math.ceil(maxVal / 5 * i)
+    const y = PAD.t + ph - (v / maxVal) * ph
+    ctx.strokeStyle = '#F3F4F6'; ctx.lineWidth = 1
+    ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(W - PAD.r, y); ctx.stroke()
+    if (v > 0) {
+      ctx.font = '10px Arial,sans-serif'; ctx.fillStyle = '#9CA3AF'; ctx.textAlign = 'right'
+      ctx.fillText(v, PAD.l - 6, y + 4)
+    }
+  }
+  ctx.strokeStyle = '#D1D5DB'; ctx.lineWidth = 1.5
+  ctx.beginPath(); ctx.moveTo(PAD.l, PAD.t + ph); ctx.lineTo(W - PAD.r, PAD.t + ph); ctx.stroke()
+
+  data.forEach((mData, mi) => {
+    const groupX = PAD.l + mi * groupW + (groupW - groupBarW) / 2
+    mData.forEach((v, ti) => {
+      const x = groupX + ti * (barW + barGap)
+      const bh = v > 0 ? Math.max((v / maxVal) * ph, 2) : 0
+      const y = PAD.t + ph - bh
+      if (bh > 0) {
+        ctx.fillStyle = COLORS[ti]
+        ctx.fillRect(x, y, barW, bh)
+        if (bh > 16) {
+          ctx.font = 'bold 9px Arial,sans-serif'
+          ctx.fillStyle = '#fff'; ctx.textAlign = 'center'
+          ctx.fillText(v, x + barW / 2, y + bh / 2 + 3)
+        }
+      }
+    })
+    ctx.font = '10px Arial,sans-serif'; ctx.fillStyle = '#6B7280'; ctx.textAlign = 'center'
+    ctx.fillText(MONTHS[mi], PAD.l + mi * groupW + groupW / 2, PAD.t + ph + 15)
+  })
+
+  ctx.font = '11px Arial,sans-serif'
+  const legItems = top3.map((op, i) => {
+    const lbl = op.length > 20 ? op.slice(0, 18) + '…' : op
+    return { lbl, color: COLORS[i], tw: ctx.measureText(lbl).width }
+  })
+  const legTotalW = legItems.reduce((a, it) => a + 14 + 5 + it.tw, 0) + (legItems.length - 1) * 22
+  let legX = W / 2 - legTotalW / 2
+  const legY = H - 10
+  legItems.forEach(({ lbl, color, tw }) => {
+    ctx.fillStyle = color; ctx.fillRect(legX, legY - 12, 12, 12)
+    ctx.fillStyle = '#374151'; ctx.textAlign = 'left'
+    ctx.fillText(lbl, legX + 16, legY)
+    legX += 16 + tw + 22
+  })
+
+  return _b64(c)
+}
+
+function _chartTiposResume(its, opLabel) {
+  const cnt = {}
+  its.forEach(i => { const t = i.tipo || 'Outro'; cnt[t] = (cnt[t]||0)+1 })
+  const sorted = Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0, 9)
+
+  const W = 900, H = 300, c = _mkC(W, H), ctx = c.getContext('2d')
+  _base(ctx, W, H, `Tipos de Demanda — ${opLabel}`)
+
+  if (!sorted.length) {
+    ctx.font='14px Arial,sans-serif'; ctx.fillStyle='#9CA3AF'; ctx.textAlign='center'
+    ctx.fillText('Sem dados', W/2, H/2)
+    return _b64(c)
+  }
+
+  const PAD = { t:58, r:80, b:20, l:230 }
+  const pw = W - PAD.l - PAD.r, ph = H - PAD.t - PAD.b
+  const n = Math.min(sorted.length, 8)
+  const rowH = ph / n
+  const max = Math.max(...sorted.slice(0,n).map(e=>e[1]), 1)
+  const STRIPE = ['#FAFAFA','#F5F3FF']
+
+  for (let i = 0; i < n; i++) {
+    const [lbl, v] = sorted[i]
+    const bh = Math.min(rowH * 0.55, 22)
+    const y  = PAD.t + i * rowH + (rowH - bh) / 2
+    const bw = (v / max) * pw
+
+    ctx.fillStyle = STRIPE[i % 2]
+    ctx.fillRect(PAD.l, PAD.t + i * rowH, pw, rowH)
+
+    if (bw > 0) {
+      const g = ctx.createLinearGradient(PAD.l, 0, PAD.l + bw, 0)
+      g.addColorStop(0, '#7C6AF7'); g.addColorStop(1, '#A89BF9')
+      ctx.fillStyle = g; ctx.fillRect(PAD.l, y, bw, bh)
+    }
+
+    const lblTxt = lbl.length > 28 ? lbl.slice(0, 26) + '…' : lbl
+    ctx.font='11px Arial,sans-serif'; ctx.fillStyle='#374151'; ctx.textAlign='right'
+    ctx.fillText(lblTxt, PAD.l - 10, y + bh / 2 + 4)
+    ctx.font='bold 11px Arial,sans-serif'; ctx.fillStyle='#1F2937'; ctx.textAlign='left'
+    ctx.fillText(v, PAD.l + bw + 8, y + bh / 2 + 4)
+  }
+
+  return _b64(c)
+}
+
+function _gerarGraficos(its) {
+  const years = new Set(its.map(i=>i.data&&i.data.split('/')[2]).filter(Boolean))
+  const year  = [...years].sort().pop() || String(new Date().getFullYear())
+  const mon   = Array(12).fill(0)
+  its.forEach(i=>{ if(!i.data) return; const [,m,y]=i.data.split('/'); if(y===year) mon[parseInt(m)-1]++ })
+  const cnt = (arr,key) => { const o={}; arr.forEach(i=>{const k=i[key]||'—';o[k]=(o[k]||0)+1}); return Object.entries(o).sort((a,b)=>b[1]-a[1]) }
+  const tP = cnt(its,'tipo').slice(0,9), oP = cnt(its,'op').slice(0,9)
+  const sL = ['Aberto','Em andamento','Resolvido','Escalado','Sem resposta']
+  const sC = ['#EF4444','#F59E0B','#10B981','#F97316','#8B5CF6']
+  return {
+    mensal:     _chartBars(mon, ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'], `Demandas por Mês — ${year}`),
+    status:     _chartDonut(sL.map(s=>its.filter(i=>i.status===s).length), sL, sC, 'Distribuição por Status'),
+    tipos:      _chartHBars(tP.map(e=>e[1]), tP.map(e=>e[0]), 'Demandas por Tipo'),
+    operadoras: _chartHBars(oP.map(e=>e[1]), oP.map(e=>e[0]), 'Demandas por Operadora'),
+  }
+}
+
+// ── Mapeamento de nome curto das operadoras ───────────────────────────────
+const OP_DISPLAY = {
+  'UNIMED SA':                'SA',
+  'UNIMED NOROESTE DO PARANA':'Noroeste do Paraná',
+  'UNIMED NORDESTE PAULISTA': 'Nordeste Paulista',
+  'UNIMED GERAIS DE MINAS':   'Gerais de Minas',
+  'UNIMED MISSÕES':           'Missões/RS',
+  'UNIMED CAMPOS':            'Campos',
+  'UNIMED FRANCA':            'Franca',
+  'UNIMED JUIZ DE FORA':      'Juiz de Fora',
+  'UNIMED SANTA MARIA':       'Santa Maria',
+  'UNIMED ENCOSTA DA SERRA':  'Encosta da Serra',
+  'CÍRCULO SAÚDE':            'Círculo Saúde',
+}
+
+const MESES_F = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                 'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+
+function mesAnoFromYM(selectedYM) {
+  if (!selectedYM) return { mes: 'Completo', ano: String(new Date().getFullYear()) }
+  const [y, m] = selectedYM.split('-')
+  return { mes: MESES_F[parseInt(m) - 1], ano: y }
+}
+
+// Monta o objeto de dados de UMA operadora — usado tanto pelo "Gerar
+// Fechamento" individual quanto pelo "Fechamento Completo", pra nunca
+// duplicar a lógica de agrupamento por tipo.
+function buildFechamentoDataFor(op, selectedYM, mes, ano) {
+  let filtered = items.filter(i => i.op === op)
+  if (selectedYM) {
+    const [y, m] = selectedYM.split('-')
+    filtered = filtered.filter(i => {
+      if (!i.data) return false
+      const p = i.data.split('/')
+      return p[1] === m && p[2] === y
+    })
+  }
+  const cnt = {}
+  filtered.forEach(i => { const t = i.tipo || 'Outro'; cnt[t] = (cnt[t] || 0) + 1 })
+  const tipos = Object.entries(cnt).sort((a, b) => b[1] - a[1]).map(([tipo, count]) => ({ tipo, count }))
+  return {
+    op,
+    opDisplay: OP_DISPLAY[op] || op.replace(/^UNIMED\s+/i, ''),
+    mes, ano,
+    total: filtered.length,
+    tipos,
+  }
+}
+
+async function gerarFechamento() {
+  const op = document.getElementById('dash-op').value
+  if (!op) { showToast('Selecione uma operadora no filtro primeiro.', 'info'); return }
+
+  const selectedYM = document.getElementById('dash-month').value
+  const { mes, ano } = mesAnoFromYM(selectedYM)
+  const data = buildFechamentoDataFor(op, selectedYM, mes, ano)
+  if (!data.total) { showToast('Sem dados para essa operadora no período.', 'info'); return }
+
+  await window.csApp.openFechamento(data)
+}
+
+// Operadoras que ainda não devem entrar no Fechamento Completo (ex.: sem
+// demandas sendo registradas ainda). Continuam disponíveis pra registro
+// individual e pro "Gerar Fechamento" avulso — só saem do arquivo completo.
+const EXCLUIR_DO_COMPLETO = ['UNIMED JUIZ DE FORA']
+
+// Operadoras "registradas no app" = as opções do <select> de operadora do
+// formulário (única lista existente hoje — reaproveitada em vez de
+// hardcodar uma lista nova). Círculo Saúde sempre por último, como pedido;
+// as demais mantêm a ordem já definida nesse <select>.
+function operadorasRegistradas() {
+  const opts = [...document.querySelectorAll('#f-op option')].map(o => o.value)
+    .filter(Boolean)
+    .filter(op => !EXCLUIR_DO_COMPLETO.includes(op))
+  const semCirculo = opts.filter(o => o !== 'CÍRCULO SAÚDE')
+  return opts.includes('CÍRCULO SAÚDE') ? [...semCirculo, 'CÍRCULO SAÚDE'] : semCirculo
+}
+
+async function gerarFechamentoCompleto() {
+  const selectedYM = document.getElementById('dash-month').value
+  if (!selectedYM) { showToast('Selecione um mês específico no filtro de período primeiro.', 'info'); return }
+  const { mes, ano } = mesAnoFromYM(selectedYM)
+
+  const operadoras = operadorasRegistradas().map(op => buildFechamentoDataFor(op, selectedYM, mes, ano))
+  if (!operadoras.length) { showToast('Nenhuma operadora cadastrada.', 'info'); return }
+
+  await window.csApp.openFechamentoCompleto({ mes, ano, operadoras })
+}
+
+async function loadExportFolderHint() {
+  const folder = await window.csApp.getExportFolder()
+  const el = document.getElementById('export-folder-hint')
+  if (!el) return
+  if (folder) {
+    const parts = folder.replace(/\\/g, '/').split('/')
+    const short = parts.slice(-2).join('/')
+    el.textContent = '📂 ' + short
+    el.title = folder
+  } else {
+    el.textContent = 'Pasta: padrão (clique 📁 para configurar)'
+  }
+}
+
+async function configExportFolder() {
+  const folder = await window.csApp.chooseExportFolder()
+  if (folder) {
+    showToast('✓ Pasta configurada: ' + folder.split(/[\\/]/).slice(-1)[0], 'success')
+    loadExportFolderHint()
+  }
+}
+
+async function exportXLSX() {
+  if (!items.length) { showToast('Nenhum dado para exportar.', 'info'); return }
+  showToast('Gerando Excel…', 'info', 8000)
+  try {
+    const mes = document.getElementById('filter-month').value
+    const exportItems = getFilteredItems()
+    const charts = _gerarGraficos(exportItems)
+    const result = await window.csApp.exportExcel({ items: exportItems, allItems: items, mes, charts })
+    if (result && result.ok === false) {
+      showToast('Erro ao gerar Excel: ' + (result.error || 'desconhecido'), 'error', 8000)
+    } else if (result && result.ok) {
+      showToast(result.gdrive ? '☁️ Excel salvo no Google Drive!' : '✓ Excel salvo com sucesso!', 'success')
+    }
+  } catch (e) {
+    showToast('Erro inesperado: ' + e.message, 'error', 8000)
+  }
+}
+
+async function backupJSON() {
+  if (!items.length) { alert('Nenhum dado para exportar.'); return }
+  const result = await window.csApp.backup(items)
+  if (result.ok)
+    showToast(`✓ Backup salvo — ${result.arquivo} (${result.total} demandas)`, 'success')
+  else
+    showToast('Erro ao salvar o backup: ' + (result.error || ''), 'error')
+}
+
+async function restoreJSON() {
+  const data = await window.csApp.restore()
+  if (!data) return
+  const msg = items.length
+    ? `Substituir ${items.length} registro(s) atual(is) por ${data.length} do backup?\n\nClique OK para confirmar.`
+    : `Importar ${data.length} registro(s) do backup?`
+  if (!confirm(msg)) return
+  items = data
+  save(); render()
+  showToast(`✓ ${data.length} demanda${data.length !== 1 ? 's' : ''} restaurada${data.length !== 1 ? 's' : ''}!`, 'success')
+}
+
+;(async () => {
+  await load()
+  render()
+  loadExportFolderHint()
+  scheduleEndOfDay()
+  // Notifica demandas abertas há mais de 1 dia
+  try {
+    const now = new Date()
+    const overdue = items.filter(i => {
+      if (i.status !== 'Em andamento' || !i.data) return false
+      const [d, m, y] = i.data.split('/')
+      return (now - new Date(y, m-1, d)) / 86400000 >= 1
+    })
+    if (overdue.length && window.csApp?.notify) {
+      window.csApp.notify({
+        title: `⚠ ${overdue.length} demanda${overdue.length !== 1 ? 's' : ''} em atraso`,
+        body: overdue.slice(0,3).map(i => `• ${i.ben || i.tipo || '—'} (${i.op})`).join('\n')
+           + (overdue.length > 3 ? `\n…e mais ${overdue.length - 3}` : ''),
+      })
+    }
+  } catch { /* silencioso */ }
+})()
+</script>
+
+<!-- Modal resumo do dia -->
+<div id="modal-daily" style="display:none" class="daily-overlay" onclick="if(event.target===this)closeDailyModal()">
+  <div class="daily-modal">
+    <div>
+      <div class="daily-title">☀️ Resumo do Dia</div>
+      <div class="daily-sub" id="daily-date"></div>
+    </div>
+    <div class="daily-kpis">
+      <div class="daily-kpi">
+        <span class="daily-kpi-n" id="daily-n-abertas" style="color:var(--accent)">0</span>
+        <span class="daily-kpi-l">Abertas hoje</span>
+      </div>
+      <div class="daily-kpi">
+        <span class="daily-kpi-n" id="daily-n-resolvidas" style="color:var(--green)">0</span>
+        <span class="daily-kpi-l">Resolvidas hoje</span>
+      </div>
+      <div class="daily-kpi">
+        <span class="daily-kpi-n" id="daily-n-pendentes" style="color:var(--yellow)">0</span>
+        <span class="daily-kpi-l">Ainda em aberto</span>
+      </div>
+    </div>
+    <div class="daily-list" id="daily-pendentes-list"></div>
+    <button class="daily-btn-close" onclick="closeDailyModal()">Fechar — Bom descanso! 👋</button>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,5 @@
+node_modules/
+dist/
+*.asar
+*.asar.unpacked
+renderer/Exemplo-errado.png

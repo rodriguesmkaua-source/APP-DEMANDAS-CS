@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Fechamento KnowU CS</title>
+  <link rel="stylesheet" href="fechamento.css">
+  <style>
+    body {
+      background: #22252f;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 14px 20px 20px; gap: 10px; min-height: 100vh;
+    }
+    .ctrl {
+      width: 1672px; background: #2e3140; border-radius: 7px;
+      border: 1px solid rgba(255,255,255,.07); padding: 9px 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .ctrl-lbl { flex: 1; font-size: 13px; font-weight: 700; color: rgba(255,255,255,.75) }
+    .cbtn {
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      padding: 6px 16px; border-radius: 6px; border: none; cursor: pointer;
+      transition: opacity .12s;
+    }
+    .cbtn:hover { opacity: .82 }
+    .c-pdf { background: #6b7280; color: white }
+    .c-png { background: #059669; color: white }
+    .c-cls { background: rgba(255,255,255,.1); color: rgba(255,255,255,.6) }
+    @media print { .ctrl { display: none } }
+  </style>
+</head>
+<body>
+
+<!-- Controls -->
+<div class="ctrl">
+  <span class="ctrl-lbl" id="ctrl-lbl">Fechamento KnowU CS</span>
+  <button class="cbtn c-pdf" onclick="exportPDF()">🖨️ Exportar PDF</button>
+  <button class="cbtn c-png" onclick="exportPNG()">⬇️ Exportar PNG</button>
+  <button class="cbtn c-cls" onclick="window.close()">✕ Fechar</button>
+</div>
+
+<!-- Slide 1672 × 941 -->
+<div id="slide" class="slide"></div>
+
+<script src="fechamento-shared.js"></script>
+<script>
+const MOCK = {
+  op: 'UNIMED SA', opDisplay: 'SA', mes: 'Junho', ano: 2026,
+  total: 25,
+  tipos: [
+    { tipo: 'Agendamento EQ',                  count: 9 },
+    { tipo: 'Reenvio de assinatura médica',    count: 8 },
+    { tipo: 'Aguardando assinatura do médico', count: 3 },
+    { tipo: 'N° Incorreto',                    count: 2 },
+    { tipo: 'Reagendamento EQ',                count: 2 },
+    { tipo: 'Modificar Cadastro',              count: 1 },
+  ]
+}
+
+async function render(data) {
+  const slide = document.getElementById('slide')
+  slide.innerHTML = operatorSlideMarkup()
+  await renderOperatorSlide(slide, data)
+
+  const nome = data.opDisplay || (data.op || '').replace(/^UNIMED\s+/i, '')
+  document.title = `Fechamento ${nome} ${data.mes} ${data.ano}`
+  document.getElementById('ctrl-lbl').textContent = `Fechamento ${nome} — ${data.mes} ${data.ano}`
+}
+
+async function exportPDF() {
+  if (!window.csApp) { alert('Disponível apenas dentro do app.'); return }
+  const result = await window.csApp.printFechamentoPDF()
+  if (result && result.error) alert('Erro ao exportar PDF: ' + result.error)
+}
+
+async function exportPNG() {
+  if (!window.csApp || !window.csApp.captureFechamentoPNG) { alert('Disponível apenas dentro do app.'); return }
+  const result = await window.csApp.captureFechamentoPNG()
+  if (result && result.error) alert('Erro ao exportar PNG: ' + result.error)
+}
+
+async function init() {
+  let data = MOCK
+  if (window.csApp) {
+    const real = await window.csApp.getFechamentoData()
+    if (real) data = real
+  }
+  await render(data)
+  // Sinaliza para a janela offscreen de exportação (main.js) que o slide já
+  // está totalmente desenhado (donut + logo carregados) e pode ser capturado.
+  window.__fechamentoReady = true
+  document.dispatchEvent(new Event('fechamento-ready'))
+}
+
+init()
+</script>
+</body>
+</html>

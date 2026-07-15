@@ -1,0 +1,135 @@
+/* Estilos do slide de fechamento por operadora — compartilhado entre
+   fechamento.html (individual) e fechamento-completo.html (capa + todas). */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+
+:root {
+  --orange:     #F15A24;   /* header bg · Total · Assinatura médica · Reenvio */
+  --green-brand:#00843D;   /* Maior demanda */
+  --navy:       #0B1F4A;   /* títulos */
+  --blue:       #3B5AA0;   /* subtítulos / labels dos cards */
+  --gray-text:  #55524C;
+  --track-bg:   #EDEAE3;
+  --card-bg:    #FFFFFF;
+  --page-bg:    #F5F4F1;
+}
+
+body { font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif }
+
+/* ── Slide 1672×941 (proporção 16:9) ── */
+.slide {
+  width: 1672px; height: 941px;
+  background: var(--page-bg);
+  border-radius: 6px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.1);
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+
+/* ── Header ── */
+.hd {
+  height: 130px; flex-shrink: 0;
+  background: var(--orange);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 56px 0 62px;
+}
+.hd-title {
+  font-size: 50px; font-weight: 800; color: #fff;
+  letter-spacing: -.5px; line-height: 1; white-space: nowrap;
+  max-width: 1050px; overflow: hidden;
+}
+.hd-logo-wrap { flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end; height: 100%; max-width: 420px }
+.hd-logo-wrap img { height: 92px; max-width: 420px; object-fit: contain; display: block }
+.hd-logo-fallback {
+  height: 66px; padding: 0 22px; border-radius: 10px;
+  background: rgba(255,255,255,.16);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 20px; font-weight: 800; letter-spacing: .3px;
+  white-space: nowrap;
+}
+
+/* ── Card principal ── */
+.card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: 0 2px 18px rgba(20,20,30,.06);
+  margin: 30px 52px 44px 52px;
+  padding: 34px 44px 40px 44px;
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-title { font-size: 27px; font-weight: 800; color: var(--navy); line-height: 1.15 }
+.card-subtitle { font-size: 17px; font-weight: 600; color: var(--blue); margin-top: 4px }
+
+/* ── KPI cards ── */
+.kpi-row { display: flex; gap: 40px; margin: 26px 0 34px }
+.kpi-box {
+  flex: 1; min-width: 0;
+  background: #FAFAF8; border: 1px solid #EFEDE7; border-radius: 10px;
+  padding: 16px 22px;
+}
+.kpi-label {
+  font-size: 12.5px; font-weight: 800; color: var(--blue);
+  text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px;
+}
+.kpi-line { display: flex; align-items: baseline; gap: 13px; min-width: 0 }
+.kpi-num { font-size: 35px; font-weight: 800; line-height: 1; flex-shrink: 0; font-variant-numeric: tabular-nums }
+.kpi-num.orange { color: var(--orange) }
+.kpi-num.green  { color: var(--green-brand) }
+.kpi-desc {
+  font-size: 15px; color: var(--gray-text); font-weight: 500;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Corpo: donut + tabela ── */
+.body-row { display: flex; flex: 1; min-height: 0 }
+.section-title { font-size: 21px; font-weight: 800; color: var(--navy); margin-bottom: 22px; flex-shrink: 0 }
+
+.donut-col { width: 566px; flex-shrink: 0; display: flex; flex-direction: column; min-height: 0 }
+.donut-wrap { flex: 1; display: flex; align-items: center }
+.donut { width: 386px; height: 386px }
+
+.table-col { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0 }
+.tbl-head {
+  display: grid; grid-template-columns: 336px 1fr 70px 64px;
+  padding-bottom: 10px; border-bottom: 1.5px solid #E4E1D9; margin-bottom: 4px;
+  flex-shrink: 0;
+}
+.tbl-head span {
+  font-size: 13px; font-weight: 800; color: #A9A49A;
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.tbl-head span:nth-child(3), .tbl-head span:nth-child(4) { text-align: right }
+
+.tbl-rows { display: flex; flex-direction: column; justify-content: space-evenly; flex: 1; min-height: 0 }
+.tbl-row {
+  display: grid; grid-template-columns: 336px 1fr 70px 64px;
+  align-items: center; column-gap: 0;
+}
+.tbl-name {
+  font-size: 16px; color: #2b2b2b; font-weight: 500;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px;
+}
+.tbl-bar-track {
+  height: 13px; max-width: 374px; border-radius: 7px;
+  background: var(--track-bg); overflow: hidden;
+}
+.tbl-bar-fill { height: 100%; border-radius: 7px; min-width: 0 }
+.tbl-qtd { font-size: 20px; font-weight: 800; color: var(--navy); text-align: right; font-variant-numeric: tabular-nums }
+.tbl-pct { font-size: 14px; color: #A9A49A; text-align: right; font-variant-numeric: tabular-nums }
+
+/* ── Estado vazio (sem demandas no período) ── */
+.empty-banner {
+  position: absolute; left: 44px; right: 44px; top: 50%; transform: translateY(-30px);
+  text-align: center; pointer-events: none;
+}
+.empty-banner .icon { font-size: 40px; margin-bottom: 10px }
+.empty-banner .txt { font-size: 19px; font-weight: 700; color: #B7B2A8 }
+
+@media print {
+  *, *::before, *::after { -webkit-print-color-adjust: exact; print-color-adjust: exact }
+  body { background: white; margin: 0 }
+  .slide { border-radius: 0; box-shadow: none }
+}
